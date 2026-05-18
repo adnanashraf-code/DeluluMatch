@@ -27,6 +27,7 @@ export default function CursorTrail() {
   // Ghost trail arrays for trailing duplication glitches
   const [ghosts, setGhosts] = useState<{ x: number; y: number }[]>([]);
   const [touchRipples, setTouchRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [isOverForm, setIsOverForm] = useState(false);
 
   const cursorRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number | null>(null);
@@ -47,49 +48,51 @@ export default function CursorTrail() {
       targetX.current = e.clientX;
       targetY.current = e.clientY;
 
-      // ⚠️ Button Panic & Dodging Mechanics (Emergent Frustration)
-      if (cursorScale > 1.3) {
-        const hoveredElement = document.elementFromPoint(e.clientX, e.clientY);
-        if (hoveredElement) {
-          const button = hoveredElement.closest('button, a, input[type="submit"]') as HTMLElement;
-          if (button) {
-            // Panic vibration shiver based on cursor weight
-            const amplitude = (cursorScale - 1) * 12;
-            const shiverX = (Math.random() - 0.5) * amplitude;
-            const shiverY = (Math.random() - 0.5) * amplitude;
-            
-            button.style.transition = 'transform 0.05s ease-out';
-            button.style.transform = `translate3d(${shiverX}px, ${shiverY}px, 0)`;
+      // Check if cursor is over a form area → switch to normal pointer
+      const hoveredElement = document.elementFromPoint(e.clientX, e.clientY);
+      if (hoveredElement) {
+        const inForm = hoveredElement.closest('form, select, input, textarea, [data-normal-cursor]');
+        setIsOverForm(!!inForm);
+        
+        // If inside a form, skip ALL dodging mechanics
+        if (inForm) return;
+      } else {
+        setIsOverForm(false);
+      }
 
-            // Extreme dodging when cursor is giant!
-            if (cursorScale > 1.8 && Math.random() > 0.6) {
-              const rect = button.getBoundingClientRect();
-              const btnCenterX = rect.left + rect.width / 2;
-              const btnCenterY = rect.top + rect.height / 2;
-              
-              // Vector away from cursor
-              const dirX = btnCenterX - e.clientX;
-              const dirY = btnCenterY - e.clientY;
-              const distance = Math.max(1, Math.sqrt(dirX * dirX + dirY * dirY));
-              
-              // Push button 25px away from giant cursor
-              const pushX = (dirX / distance) * 28;
-              const pushY = (dirY / distance) * 28;
-              
-              button.style.transform = `translate3d(${pushX}px, ${pushY}px, 0)`;
-              
-              // Trigger slight glitch sound
-              if (Math.random() > 0.95) play('ERROR');
-            }
+      // ⚠️ Button Panic & Dodging Mechanics (only OUTSIDE forms)
+      if (cursorScale > 1.3 && hoveredElement) {
+        const button = hoveredElement.closest('button, a, input[type="submit"]') as HTMLElement;
+        if (button) {
+          const amplitude = (cursorScale - 1) * 12;
+          const shiverX = (Math.random() - 0.5) * amplitude;
+          const shiverY = (Math.random() - 0.5) * amplitude;
+          
+          button.style.transition = 'transform 0.05s ease-out';
+          button.style.transform = `translate3d(${shiverX}px, ${shiverY}px, 0)`;
+
+          if (cursorScale > 1.8 && Math.random() > 0.6) {
+            const rect = button.getBoundingClientRect();
+            const btnCenterX = rect.left + rect.width / 2;
+            const btnCenterY = rect.top + rect.height / 2;
+            const dirX = btnCenterX - e.clientX;
+            const dirY = btnCenterY - e.clientY;
+            const distance = Math.max(1, Math.sqrt(dirX * dirX + dirY * dirY));
+            const pushX = (dirX / distance) * 28;
+            const pushY = (dirY / distance) * 28;
+            button.style.transform = `translate3d(${pushX}px, ${pushY}px, 0)`;
+            if (Math.random() > 0.95) play('ERROR');
           }
         }
       }
     };
 
     const handleClick = (e: MouseEvent) => {
-      incrementCursorScale();
+      // Don't grow cursor or play chaos sounds when clicking inside forms
+      const target = e.target as HTMLElement;
+      if (target?.closest('form, select, input, textarea, [data-normal-cursor]')) return;
       
-      // Play a heavy unstable hum that increases pitch with cursor size!
+      incrementCursorScale();
       play('CLICK');
       if (cursorScale > 1.8 && Math.random() > 0.5) {
         play('ERROR');
@@ -202,7 +205,12 @@ export default function CursorTrail() {
 
   return (
     <>
-      {/* 1. Main Custom Rage Cursor */}
+      {/* Global cursor style override when over forms */}
+      {isOverForm && (
+        <style>{`* { cursor: default !important; }`}</style>
+      )}
+      
+      {/* 1. Main Custom Rage Cursor — hidden when over forms */}
       <div
         ref={cursorRef}
         className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[999999] select-none origin-center mix-blend-screen"
@@ -210,7 +218,8 @@ export default function CursorTrail() {
           marginLeft: '-16px',
           marginTop: '-16px',
           filter: `drop-shadow(0 0 ${8 * cursorScale}px ${glowColor})`,
-          transition: 'transform 0.05s ease-out'
+          transition: 'transform 0.05s ease-out, opacity 0.15s ease',
+          opacity: isOverForm ? 0 : 1,
         }}
       >
         {/* Cursor Graphic: Glitchy emoji or toxic pointer */}

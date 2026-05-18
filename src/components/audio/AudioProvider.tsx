@@ -45,31 +45,117 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     osc.stop(ctx.currentTime + 0.08);
   };
 
-  // 2. Programmatic Synthesizer: ERROR Alert
-  const synthError = (ctx: AudioContext, destination: AudioNode) => {
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const gain = ctx.createGain();
+  // 2. ERROR = Desi Slang Voice Only (Hindi Devanagari for realistic pronunciation)
+  const ERROR_SLANG_HINDI = [
+    'अबे साले, क्या कर रहा है?',
+    'भाई तेरा दिमाग खराब है क्या?',
+    'ओ भाई, सिस्टम फट गया!',
+    'निकल लौंडे, पहली फुर्सत में निकल!',
+    'एरर पे एरर दे रहा है तू!',
+    'तेरा एक्स भी इससे बेहतर था!',
+    'पागल है क्या बे? रुक जा!',
+    'अरे यार, फिर से तोड़ दिया सब!',
+    'भाई थेरेपी ले, ऐप नहीं!',
+    'इमोशनल डैमेज हो गया रे!',
+    'तू रहने दे भाई, तेरा बस की नहीं है!',
+    'सिस्टम बोला, तेरे से ना हो पाएगा!',
+    'ओए होए, क्या सीन है ये!',
+    'अरे बेवकूफ, बंद कर ये सब!',
+    'भाई तू तो गया अब!',
+    'ये क्या बवाल मचा रखा है?',
+    'तेरी तो लग गई भाई!',
+    'बंद कर ये नौटंकी!',
+  ];
 
-    osc1.type = 'square';
-    osc2.type = 'sawtooth';
+  // Romanized fallback if no Hindi voice is available
+  const ERROR_SLANG_ROMAN = [
+    'Abe saale, kya kar raha hai?',
+    'Bhai tera dimaag kharaab hai kya?',
+    'Ooo bhai, system fat gaya!',
+    'Nikal launde, pehli fursat mein nikal!',
+    'Error pe error de raha hai tu!',
+    'Tera ex bhi isse better tha!',
+    'Pagal hai kya be? Ruk ja!',
+    'Arey yaar, phir se tod diya sab!',
+    'Bhai therapy le, app nahi!',
+    'Emotional damage ho gaya re!',
+    'Tu rehne de bhai, tera bas ki nahi hai!',
+    'System bola, tere se na ho payega!',
+    'Oye hoye, kya scene hai ye!',
+    'Arre bewakoof, band kar ye sab!',
+    'Bhai tu toh gaya ab!',
+    'Ye kya bawaal macha rakha hai?',
+    'Teri toh lag gayi bhai!',
+    'Band kar ye nautanki!',
+  ];
+
+  // Cache voices - they load asynchronously
+  const cachedVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  const hindiVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
     
-    osc1.frequency.setValueAtTime(140, ctx.currentTime);
-    osc2.frequency.setValueAtTime(143, ctx.currentTime); // Dissonant beats
-
-    gain.gain.setValueAtTime(isMuted ? 0 : globalVolume * 0.5, ctx.currentTime);
-    gain.gain.setValueAtTime(isMuted ? 0 : globalVolume * 0.5, ctx.currentTime + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-
-    osc1.connect(gain);
-    osc2.connect(gain);
-    gain.connect(destination);
-
-    osc1.start();
-    osc2.start();
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      cachedVoicesRef.current = voices;
+      
+      // Find best Hindi/Indian voice
+      const googleHi = voices.find(v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('google'));
+      const msHi = voices.find(v => v.lang === 'hi-IN');
+      const googleEnIn = voices.find(v => v.lang === 'en-IN' && v.name.toLowerCase().includes('google'));
+      const msEnIn = voices.find(v => v.lang === 'en-IN');
+      const anyIndian = voices.find(v => v.lang.includes('IN'));
+      
+      hindiVoiceRef.current = googleHi || msHi || googleEnIn || msEnIn || anyIndian || null;
+      console.log('[DeluluMatch Audio] Voices loaded:', voices.length, '| Hindi voice:', hindiVoiceRef.current?.name || 'NONE - using default');
+    };
     
-    osc1.stop(ctx.currentTime + 0.5);
-    osc2.stop(ctx.currentTime + 0.5);
+    // Load immediately + listen for async load
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  const speakSlang = () => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    
+    const voice = hindiVoiceRef.current;
+    const hasHindi = voice && voice.lang.startsWith('hi');
+    
+    // Pick text based on whether we have a Hindi voice
+    const slangList = hasHindi ? ERROR_SLANG_HINDI : ERROR_SLANG_ROMAN;
+    const line = slangList[Math.floor(Math.random() * slangList.length)];
+    
+    console.log('[DeluluMatch] Speaking:', line, '| Voice:', voice?.name || 'DEFAULT', '| Lang:', voice?.lang || 'none');
+    
+    // Cancel any ongoing speech first
+    window.speechSynthesis.cancel();
+    
+    // Small delay after cancel to prevent race condition
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(line);
+      
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang;
+      }
+      // Do NOT set lang to 'hi-IN' if no voice — let browser use default
+      
+      utterance.rate = 0.85;
+      utterance.pitch = 0.8;
+      utterance.volume = 1.0;
+      
+      window.speechSynthesis.speak(utterance);
+    }, 50);
+  };
+
+  // synthError: ONLY speaks slang
+  const synthError = (_ctx: AudioContext, _destination: AudioNode) => {
+    speakSlang();
   };
 
   // 3. Programmatic Synthesizer: Dialup Modem Handshake

@@ -19,8 +19,23 @@ export default function TransitionOverlay() {
   const containerRef = useRef<HTMLDivElement>(null);
   const logsRef = useRef<HTMLDivElement>(null);
   const [currentLogs, setCurrentLogs] = useState<string[]>([]);
+  const [shouldShow, setShouldShow] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasSeen = sessionStorage.getItem('has-seen-intro-overlay');
+      if (hasSeen === 'true') {
+        setShouldShow(false);
+        return;
+      }
+      setShouldShow(true);
+      sessionStorage.setItem('has-seen-intro-overlay', 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (shouldShow !== true) return;
+
     // Play transition sounds on trigger
     play('DIALUP');
 
@@ -65,13 +80,20 @@ export default function TransitionOverlay() {
       tl.kill();
       glowTween.kill();
     };
-  }, [play]);
+  }, [shouldShow, play]);
+
+  if (shouldShow === false) {
+    return null;
+  }
 
   return (
     <div
       ref={containerRef}
       className="fixed inset-0 z-[99999] bg-[#0c0410] flex flex-col items-center justify-center p-6 border-b border-[#FF007F]/40"
-      style={{ transform: 'translateY(0%)' }}
+      style={{ 
+        transform: 'translateY(0%)',
+        display: shouldShow === null ? 'none' : 'flex'
+      }}
     >
       {/* Dynamic Background CRT Scanline Matrix */}
       <div className="absolute inset-0 opacity-20 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.3)_50%),linear-gradient(90deg,rgba(255,0,127,0.06),rgba(138,43,226,0.02),rgba(255,0,0,0.06))] bg-[length:100%_3px,3px_100%]" />

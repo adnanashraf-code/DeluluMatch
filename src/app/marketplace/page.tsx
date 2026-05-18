@@ -7,6 +7,7 @@ import { useChaosStore } from '@/store/useChaosStore';
 import { useSound } from '@/components/audio/AudioProvider';
 import { Heart, X, AlertOctagon, Sparkles, MessageSquare, ShieldAlert, Award, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import ChaosErrorEngine from '@/components/cursed-ui/ChaosErrorEngine';
 
 // Toxic profiles data
 const TOXIC_PROFILES = [
@@ -18,6 +19,7 @@ const TOXIC_PROFILES = [
     interests: ['Ghosting', 'Read Receipts', 'Vague bios'],
     redFlag: 'RED FLAG: Still follows and checks their ex\'s Spotify listening history hourly.',
     emoji: '🤠',
+    image: '/toxic_match_karan.png',
     theme: 'from-blue-900/30 to-slate-900/40'
   },
   {
@@ -28,6 +30,7 @@ const TOXIC_PROFILES = [
     interests: ['Anxious Attachment', 'Astrology', 'Overthinking'],
     redFlag: 'RED FLAG: Will inspect your active status on WhatsApp while ignoring your Instagram DM.',
     emoji: '💅',
+    image: '/toxic_match_sneha.png',
     theme: 'from-pink-900/30 to-stone-900/40'
   },
   {
@@ -38,6 +41,7 @@ const TOXIC_PROFILES = [
     interests: ['Gaslighting', 'Dry Texting', 'Acoustic Guitar'],
     redFlag: 'RED FLAG: Tells you you\'re overreacting, then screenshots your messages to show their group chat.',
     emoji: '🎸',
+    image: '/toxic_match_kabir.png',
     theme: 'from-purple-900/30 to-neutral-900/40'
   },
   {
@@ -48,6 +52,7 @@ const TOXIC_PROFILES = [
     interests: ['Ignoring DMs', '4k Unreads', 'Nap Enthusiast'],
     redFlag: 'RED FLAG: Currently has 4,213 unread messages and counts ignoring people as a workout.',
     emoji: '👻',
+    image: '/toxic_match_nisha.png',
     theme: 'from-red-900/30 to-zinc-900/40'
   }
 ];
@@ -186,10 +191,10 @@ export default function MarketplacePage() {
   const activeProfile = profiles[activeProfileIndex];
 
   return (
-    <div className="min-h-screen bg-[#080208] text-white flex flex-col font-mono relative overflow-hidden">
+    <div className="h-screen bg-[#080208] text-white flex flex-col font-mono relative overflow-hidden">
       
       {/* Dynamic Header */}
-      <header className="p-4 border-b border-[#FF007F]/20 bg-black/60 backdrop-blur-md flex justify-between items-center z-40">
+      <header className="px-4 py-2 border-b border-[#FF007F]/20 bg-black/60 backdrop-blur-md flex justify-between items-center z-40">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => router.push('/')}
@@ -231,10 +236,10 @@ export default function MarketplacePage() {
       </header>
 
       {/* 3-COLUMN CORE MARKETPLACE LAYOUT */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full items-start">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 p-3 max-w-[1600px] mx-auto w-full items-start overflow-hidden">
         
         {/* COLUMN 1: FILTER CHAOS (lg:col-span-3) */}
-        <aside data-emotional-object="true" className="lg:col-span-3 bg-black/40 border border-[#FF007F]/20 rounded-lg p-5 space-y-6 backdrop-blur-sm self-start">
+        <aside data-emotional-object="true" className="lg:col-span-3 bg-black/40 border border-[#FF007F]/20 rounded-lg p-3 space-y-3 backdrop-blur-sm self-start overflow-y-auto max-h-[calc(100vh-120px)] custom-scrollbar">
           <div className="flex items-center gap-2 border-b border-[#FF007F]/20 pb-3">
             <AlertOctagon size={16} className="text-[#FF007F] animate-pulse" />
             <h2 className="font-bebas text-lg tracking-widest text-[#FF007F] font-bold uppercase">TOXIC FILTER CONTROL</h2>
@@ -274,15 +279,35 @@ export default function MarketplacePage() {
             </div>
           )}
 
-          <div className="pt-2 text-[9px] text-zinc-500 uppercase leading-relaxed font-mono">
-            * Warning: Changing filters may result in involuntary notifications sent to your ex automatically.
+          <div className="pt-1 text-[8px] text-zinc-500 uppercase leading-relaxed font-mono">
+            * Warning: Filters may send involuntary notifications to your ex.
+          </div>
+
+          {/* COMPACT ANALYTICS (merged from bottom) */}
+          <div className="border-t border-[#FF007F]/20 pt-3 space-y-1.5 font-mono text-[8px] uppercase text-zinc-400">
+            <div className="text-[9px] text-[#FF007F] font-bold tracking-widest pb-1">☣️ DAMAGE SPECTRUM</div>
+            <div className="flex justify-between"><span>💔 INSTABILITY:</span><span className="text-red-500 font-bold">99.8%</span></div>
+            <div className="flex justify-between"><span>🥀 BREAKUP CO-EF:</span><span className="text-[#FF007F] font-bold">CRITICAL</span></div>
+            <div className="flex justify-between"><span>💭 DND DELAY:</span><span className="text-[#8A2BE2] font-bold">3.4 DAYS</span></div>
+            <div className="flex justify-between"><span>🩹 SELF-RESPECT:</span><span className="text-red-600 line-through">100.0%</span></div>
+          </div>
+
+          {/* LEADERBOARD (compact) */}
+          <div className="border-t border-zinc-800 pt-3 space-y-1.5">
+            <div className="text-[9px] text-[#8A2BE2] font-bold tracking-widest">🏆 DELUSION LEADERBOARD</div>
+            <div className="space-y-1 font-mono text-[8px] text-zinc-400">
+              <div className="flex justify-between"><span className="text-[#FF007F]">#1</span><span>@KabirGuitarEx</span><span className="text-red-500">99.8%</span></div>
+              <div className="flex justify-between"><span className="text-[#FF007F]">#2</span><span>@SnehaAnxious</span><span className="text-red-500">98.9%</span></div>
+              <div className="flex justify-between"><span className="text-[#FF007F]">#3</span><span>@SpotifyRelapse</span><span className="text-[#FF007F]">94.2%</span></div>
+              <div className="flex justify-between"><span className="text-[#FF007F]">#4</span><span>@DryTexterMaster</span><span className="text-[#8A2BE2]">89.1%</span></div>
+            </div>
           </div>
         </aside>
 
         {/* COLUMN 2: CENTER SWIPE FEED (lg:col-span-6) */}
         <main data-emotional-object="true" className="lg:col-span-6 flex flex-col items-center justify-center space-y-6">
           
-          <div className="w-full max-w-sm h-[480px] relative">
+          <div className="w-full max-w-sm h-[400px] relative">
             <AnimatePresence mode="wait">
               {activeProfile ? (
                 <motion.div
@@ -326,14 +351,25 @@ export default function MarketplacePage() {
                         </div>
 
                         {/* Portrait Glitch placeholder */}
-                        <div className="w-full h-44 bg-zinc-950/80 border border-zinc-800/80 rounded relative flex items-center justify-center group overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
-                          <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/80 border border-red-500/30 text-red-500 text-[8px] font-mono rounded">
+                        <div className="w-full h-40 bg-zinc-950/80 border border-zinc-800/80 rounded relative flex items-center justify-center group overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent z-10" />
+                          <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/80 border border-red-500/30 text-red-500 text-[8px] font-mono rounded z-20">
                             CRITICAL RISK
                           </div>
                           
-                          {/* Seductive Emoji portrait */}
-                          <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(255,0,127,0.3)] animate-pulse">{activeProfile.emoji}</span>
+                          {/* Seductive Y2K Cyber Portrait */}
+                          {activeProfile.image ? (
+                            <img 
+                              src={activeProfile.image} 
+                              alt={activeProfile.name}
+                              className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500 filter contrast-125 saturate-110"
+                            />
+                          ) : (
+                            <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(255,0,127,0.3)] animate-pulse">{activeProfile.emoji}</span>
+                          )}
+
+                          {/* Dynamic glitch scanline layer */}
+                          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-30 pointer-events-none z-20" />
                         </div>
 
                         {/* Bio & Details */}
@@ -417,10 +453,42 @@ export default function MarketplacePage() {
         </main>
 
         {/* COLUMN 3: TOXIC AI & GLITCH ADS (lg:col-span-3) */}
-        <aside data-emotional-object="true" className="lg:col-span-3 space-y-6 self-start">
+        <aside data-emotional-object="true" className="lg:col-span-3 space-y-3 self-start overflow-y-auto max-h-[calc(100vh-120px)] custom-scrollbar">
           
+          {/* TOXIC 3D ERROR SCANNER (THREE.JS) */}
+          <div className="bg-black/60 border border-[#FF007F]/30 rounded-lg p-3 space-y-2 backdrop-blur-md shadow-[0_0_20px_rgba(255,0,127,0.1)]">
+            <div className="flex items-center gap-1.5 border-b border-[#FF007F]/20 pb-2">
+              <Sparkles size={14} className="text-[#FF007F] animate-pulse" />
+              <h3 className="font-bebas text-sm tracking-widest text-[#FF007F] font-bold uppercase">3D INSTABILITY CORE</h3>
+            </div>
+            
+            <div className="h-36 rounded overflow-hidden relative border border-[#FF007F]/20">
+              <ChaosErrorEngine />
+            </div>
+          </div>
+
+          {/* RETRO HEARTBREAK GRAPHIC DASHBOARD */}
+          <div className="bg-black/60 border border-[#8A2BE2]/30 rounded-lg p-3 space-y-2 backdrop-blur-md shadow-[0_0_20px_rgba(138,43,226,0.1)]">
+            <div className="flex items-center gap-1.5 border-b border-[#8A2BE2]/20 pb-2">
+              <AlertOctagon size={14} className="text-[#8A2BE2] animate-bounce" />
+              <h3 className="font-bebas text-sm tracking-widest text-[#8A2BE2] font-bold uppercase">HEARTBEAT MESH DATA</h3>
+            </div>
+            
+            <div className="h-24 rounded overflow-hidden relative border border-[#8A2BE2]/20 bg-zinc-950 group">
+              <img 
+                src="/heartbreak_dashboard.png" 
+                alt="Heartbreak 3D mesh telemetry" 
+                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
+              <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/85 text-[8px] font-mono text-[#8A2BE2] rounded border border-[#8A2BE2]/20">
+                ACTIVE GRAPH
+              </span>
+            </div>
+          </div>
+
           {/* TOXIC AI CHAT */}
-          <div className="bg-black/40 border border-[#8A2BE2]/20 rounded-lg p-4 space-y-4 backdrop-blur-sm">
+          <div className="bg-black/40 border border-[#8A2BE2]/20 rounded-lg p-3 space-y-2 backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-[#8A2BE2]/20 pb-2">
               <div className="flex items-center gap-1.5">
                 <MessageSquare size={14} className="text-[#8A2BE2] animate-pulse" />
@@ -431,7 +499,7 @@ export default function MarketplacePage() {
               </span>
             </div>
 
-            <div className="h-44 overflow-y-auto space-y-2 pr-1 custom-scrollbar text-[10px] font-mono text-zinc-300 select-none">
+            <div className="h-28 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar text-[9px] font-mono text-zinc-300 select-none">
               {aiChats.map((chat, i) => (
                 <div 
                   key={i} 
@@ -448,7 +516,7 @@ export default function MarketplacePage() {
           </div>
 
           {/* GLITCHY Y2K BANNER AD */}
-          <div className="relative border-2 border-dashed border-[#FF007F]/40 p-4 bg-black/60 rounded-lg overflow-hidden text-center select-none shadow-[0_0_15px_rgba(255,0,127,0.05)]">
+          <div className="relative border-2 border-dashed border-[#FF007F]/40 p-3 bg-black/60 rounded-lg overflow-hidden text-center select-none shadow-[0_0_15px_rgba(255,0,127,0.05)]">
             <div className="absolute inset-0 bg-[#FF007F]/5 pointer-events-none animate-pulse" />
             
             <AnimatePresence mode="wait">
@@ -463,6 +531,16 @@ export default function MarketplacePage() {
                   <div className="inline-block px-1.5 py-0.5 bg-[#FF007F] text-black text-[8px] font-bold uppercase rounded">
                     SPONSORED
                   </div>
+
+                  {/* VIP Trauma pass coupon graphic */}
+                  <div className="w-full h-24 relative rounded overflow-hidden border border-[#FF007F]/20 mb-1">
+                    <img 
+                      src="/emotional_trauma_pass.png" 
+                      alt="Trauma Pass holographic VIP ticket" 
+                      className="absolute inset-0 w-full h-full object-cover opacity-90"
+                    />
+                  </div>
+
                   <h4 className="text-sm font-bebas font-bold text-white tracking-widest">UPGRADE TO TRAUMA PASS</h4>
                   <p className="text-[9px] text-zinc-400 uppercase leading-relaxed">
                     Tired of healthy communication? Bypass waitlists and match directly with your ex's relatives.
@@ -510,6 +588,8 @@ export default function MarketplacePage() {
         </aside>
 
       </div>
+
+
 
       {/* Ticker bar bottom */}
       <div className="h-6 bg-[#FF007F] text-black flex items-center overflow-hidden font-mono text-[8px] uppercase tracking-wider font-bold z-40">
