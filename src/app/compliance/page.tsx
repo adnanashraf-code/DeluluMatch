@@ -206,7 +206,7 @@ export default function CompliancePage() {
             }
           >
             {/* Primary Compliance Form Page */}
-            <div className="h-full p-6 md:p-10 flex flex-col justify-between font-mono bg-gradient-to-br from-[#120516] to-[#040106] border border-zinc-800 rounded-lg select-none">
+            <div data-normal-cursor className="h-full p-6 md:p-10 flex flex-col justify-between font-mono bg-gradient-to-br from-[#120516] to-[#040106] border border-zinc-800 rounded-lg select-none">
               
               <div className="space-y-6">
                 
