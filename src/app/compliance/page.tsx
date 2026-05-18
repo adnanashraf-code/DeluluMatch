@@ -51,16 +51,17 @@ export default function CompliancePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Show password warning but DON'T block submission
     if (!isPasswordValid) {
       play('ERROR');
       addPopup({
         title: '⚠️ PASSWORD COMPLIANCE FAILURE',
-        content: 'Password rules violated. Ensure two emojis, ex name, Roman numeral, and unresolved trauma are present.',
+        content: 'Password rules violated. But your lack of self-respect has been noted. Proceeding anyway...',
         x: 40,
         y: 40,
         type: 'warning'
       });
-      return;
     }
 
     play('CLICK');
@@ -93,6 +94,11 @@ export default function CompliancePage() {
         setAutoTear(true);
         setTearTriggered(true);
       }, 1000);
+
+      // Fallback navigation if tearing doesn't trigger onTearComplete
+      setTimeout(() => {
+        router.push('/thank-you');
+      }, 3500);
     }
   };
 
