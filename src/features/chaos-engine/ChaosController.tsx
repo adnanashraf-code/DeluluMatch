@@ -5,47 +5,61 @@ import { useChaosStore } from '@/store/useChaosStore';
 import { motion } from 'framer-motion';
 
 export default function ChaosController() {
-  const { isShaking, isGlitching, addPopup, triggerShake, triggerGlitch, randomizeOnlineUsers } = useChaosStore();
+  const { isShaking, isGlitching, addPopup, clearPopups, triggerShake, triggerGlitch, randomizeOnlineUsers } = useChaosStore();
 
   useEffect(() => {
+    // 1. Clear any active popups on initial mount to guarantee a clean screen!
+    clearPopups();
+
+    // Check if on mobile or small screen to reduce chaos spam
+    const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
+
     // Staged chaos ticks
     const interval = setInterval(() => {
       randomizeOnlineUsers();
 
-      // Random glitch injections
-      if (Math.random() > 0.85) {
+      // Random glitch injections - scaled down on mobile
+      if (Math.random() > (isMobile ? 0.97 : 0.85)) {
         triggerGlitch();
       }
 
-      // Random subtle screen shakes
-      if (Math.random() > 0.9) {
+      // Random subtle screen shakes - scaled down on mobile
+      if (Math.random() > (isMobile ? 0.98 : 0.9)) {
         triggerShake(400);
       }
 
-      // Random popup spawning
-      if (Math.random() > 0.8) {
+      // Gradual popup spawning: spawn a popup every 5s under the 5-cap limit
+      const currentPopups = useChaosStore.getState().popups;
+      const currentTsunami = useChaosStore.getState().tsunamiState;
+
+      if (!isMobile && currentPopups.length < 5 && currentTsunami === 'idle') {
         const warningTypes: Array<'toxic' | 'warning' | 'alert' | 'therapy'> = ['toxic', 'warning', 'alert', 'therapy'];
         const randomType = warningTypes[Math.floor(Math.random() * warningTypes.length)];
         const alerts = [
           { title: '⚠️ ANXIETY INCOMING', content: 'Compatibility engine predicts dry texting behavior from matches. Prepare emotional barriers.' },
           { title: '⚠️ RE-EVALUATION LOG', content: 'Are you sure you are ready to be gaslit again? Attachment style: Highly Avoidant.' },
           { title: '⚠️ EX ACTIVE', content: 'Your ex is currently updating their bio. Proceed with complete caution.' },
-          { title: '⚠️ LOW STANDARDS DETECTED', content: 'Standards meter fell below safety threshold. Therapy DLC purchase recommended.' }
+          { title: '⚠️ LOW STANDARDS DETECTED', content: 'Standards meter fell below safety threshold. Therapy DLC purchase recommended.' },
+          { title: '⚠️ SYSTEM FAILURE', content: 'Unresolved relationship situationship detected in active memory cache.' }
         ];
-        const randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
+
+        // Pick an alert that isn't already displayed to ensure unique errors on screen
+        const activeTitles = currentPopups.map((p) => p.title);
+        const availableAlerts = alerts.filter((a) => !activeTitles.includes(a.title));
+        const selectedAlert = availableAlerts.length > 0 ? availableAlerts[0] : alerts[Math.floor(Math.random() * alerts.length)];
         
         addPopup({
-          title: randomAlert.title,
-          content: randomAlert.content,
-          x: Math.random() * 50 + 25,
-          y: Math.random() * 50 + 25,
+          title: selectedAlert.title,
+          content: selectedAlert.content,
+          x: Math.random() * 50 + 20,
+          y: Math.random() * 50 + 20,
           type: randomType
         });
       }
-    }, 12000);
+    }, 5000); // Consistent 5s interval for a dramatic gradual build-up!
 
     return () => clearInterval(interval);
-  }, [addPopup, triggerShake, triggerGlitch, randomizeOnlineUsers]);
+  }, [addPopup, clearPopups, triggerShake, triggerGlitch, randomizeOnlineUsers]);
 
   return (
     <>

@@ -135,16 +135,18 @@ export default function TearingContainer({
       )}
 
       {/* 2. TOP PIECE */}
-      <motion.div
-        className="absolute inset-0 z-20 pointer-events-none gpu-accelerated"
-        style={{ 
-          clipPath: clipPathTop,
-        }}
-      >
-        <div className="pointer-events-auto h-full w-full bg-[#120516] border border-[#FF007F]/30 rounded-lg">
-          {children}
-        </div>
-      </motion.div>
+      {isTorn && (
+        <motion.div
+          className="absolute inset-0 z-20 pointer-events-none gpu-accelerated"
+          style={{ 
+            clipPath: clipPathTop,
+          }}
+        >
+          <div className="pointer-events-auto h-full w-full bg-[#120516] border border-[#FF007F]/30 rounded-lg">
+            {children}
+          </div>
+        </motion.div>
+      )}
 
       {/* 3. BOTTOM / TORN PIECE */}
       <motion.div

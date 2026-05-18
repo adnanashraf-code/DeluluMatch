@@ -62,7 +62,7 @@ const FILTER_OPTIONS = [
 export default function MarketplacePage() {
   const router = useRouter();
   const { play } = useSound();
-  const { addPopup, triggerShake, triggerGlitch, incrementDamage } = useChaosStore();
+  const { addPopup, triggerShake, triggerGlitch, incrementDamage, addToCart, cartItemsCount, setIsBossFighting } = useChaosStore();
 
   const [profiles, setProfiles] = useState(TOXIC_PROFILES);
   const [activeProfileIndex, setActiveProfileIndex] = useState(0);
@@ -84,6 +84,7 @@ export default function MarketplacePage() {
     if (!currentProfile) return;
 
     if (direction === 'love' || direction === 'fix') {
+      addToCart(); // Add toxic soulmate to emotional cart!
       play('DIALUP');
       triggerShake(500);
       triggerGlitch(400);
@@ -202,9 +203,30 @@ export default function MarketplacePage() {
         </div>
         
         <div className="flex gap-4 items-center">
+          {/* 🛒 EMOTIONAL CART INDICATOR WITH VIEWPORT MESH TRACKING */}
+          <div 
+            data-id="emotional-cart"
+            className="relative cursor-pointer px-3 py-1 bg-[#FF007F]/10 border border-[#FF007F]/30 text-[#FF007F] text-[10px] uppercase font-mono font-bold rounded flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,0,127,0.15)] hover:bg-[#FF007F]/20 transition-all duration-200"
+          >
+            <span>🛒 Emotional Cart:</span>
+            <span className="text-white font-bold bg-[#FF007F] px-1.5 py-0.5 rounded animate-pulse">
+              {cartItemsCount} {cartItemsCount === 1 ? 'Item' : 'Items'}
+            </span>
+          </div>
+
           <div className="px-3 py-1 bg-[#8A2BE2]/10 border border-[#8A2BE2]/30 text-[#8A2BE2] text-[10px] uppercase font-bold rounded animate-flicker">
             🔥 COMPATIBILITY MODE: DANGER
           </div>
+
+          <button 
+            onClick={() => {
+              play('CLICK');
+              setIsBossFighting(true);
+            }}
+            className="px-3 py-1 bg-[#FF007F] hover:bg-pink-400 text-black font-extrabold text-[9px] uppercase tracking-wider rounded shadow-[0_0_8px_#FF007F]"
+          >
+            LOGIN
+          </button>
         </div>
       </header>
 
@@ -212,7 +234,7 @@ export default function MarketplacePage() {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full items-start">
         
         {/* COLUMN 1: FILTER CHAOS (lg:col-span-3) */}
-        <aside className="lg:col-span-3 bg-black/40 border border-[#FF007F]/20 rounded-lg p-5 space-y-6 backdrop-blur-sm self-start">
+        <aside data-emotional-object="true" className="lg:col-span-3 bg-black/40 border border-[#FF007F]/20 rounded-lg p-5 space-y-6 backdrop-blur-sm self-start">
           <div className="flex items-center gap-2 border-b border-[#FF007F]/20 pb-3">
             <AlertOctagon size={16} className="text-[#FF007F] animate-pulse" />
             <h2 className="font-bebas text-lg tracking-widest text-[#FF007F] font-bold uppercase">TOXIC FILTER CONTROL</h2>
@@ -258,7 +280,7 @@ export default function MarketplacePage() {
         </aside>
 
         {/* COLUMN 2: CENTER SWIPE FEED (lg:col-span-6) */}
-        <main className="lg:col-span-6 flex flex-col items-center justify-center space-y-6">
+        <main data-emotional-object="true" className="lg:col-span-6 flex flex-col items-center justify-center space-y-6">
           
           <div className="w-full max-w-sm h-[480px] relative">
             <AnimatePresence mode="wait">
@@ -395,7 +417,7 @@ export default function MarketplacePage() {
         </main>
 
         {/* COLUMN 3: TOXIC AI & GLITCH ADS (lg:col-span-3) */}
-        <aside className="lg:col-span-3 space-y-6 self-start">
+        <aside data-emotional-object="true" className="lg:col-span-3 space-y-6 self-start">
           
           {/* TOXIC AI CHAT */}
           <div className="bg-black/40 border border-[#8A2BE2]/20 rounded-lg p-4 space-y-4 backdrop-blur-sm">

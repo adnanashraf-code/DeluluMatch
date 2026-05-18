@@ -52,8 +52,10 @@ export default function TransitionOverlay() {
       yPercent: 0,
       duration: 0.5,
       ease: 'power3.out'
-    })
-    .fromTo('.transition-glow', 
+    });
+
+    // Run infinite glow animation separately so it does not block timeline completion
+    const glowTween = gsap.fromTo('.transition-glow', 
       { filter: 'drop-shadow(0 0 0px #FF007F)' },
       { filter: 'drop-shadow(0 0 20px #FF007F)', repeat: -1, yoyo: true, duration: 0.4 }
     );
@@ -61,6 +63,7 @@ export default function TransitionOverlay() {
     return () => {
       clearInterval(logInterval);
       tl.kill();
+      glowTween.kill();
     };
   }, [play]);
 

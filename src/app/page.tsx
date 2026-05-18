@@ -19,7 +19,8 @@ export default function Home() {
     addPopup, 
     triggerShake, 
     triggerGlitch, 
-    incrementDamage 
+    incrementDamage,
+    setIsBossFighting
   } = useChaosStore();
 
   const [scanProgress, setScanProgress] = useState<number | null>(null);
@@ -151,7 +152,7 @@ export default function Home() {
           </span>
         </div>
 
-        <div className="flex items-center gap-6 text-[10px] font-mono tracking-wider">
+        <div className="flex items-center gap-4 text-[10px] font-mono tracking-wider">
           <div className="hidden lg:flex items-center gap-2 text-zinc-400 border border-zinc-800 px-2 py-1 bg-black/40 rounded">
             <span className="w-1.5 h-1.5 rounded-full bg-[#32CD32] animate-ping" />
             ONLINE: <span className="text-white font-bold">{onlineUsers.toLocaleString()}</span> UNAVAILABLE PEOPLE
@@ -160,6 +161,15 @@ export default function Home() {
             <Activity size={10} className="text-[#FF007F]" />
             COMPATIBILITY RISK: <span className="text-[#FF007F] font-bold">UNSTABLE ({heartbreakIndex}%)</span>
           </div>
+          <button 
+            onClick={() => {
+              play('CLICK');
+              setIsBossFighting(true);
+            }}
+            className="px-3 py-1 bg-[#FF007F] hover:bg-pink-400 text-black font-extrabold text-[9px] uppercase tracking-wider rounded shadow-[0_0_8px_#FF007F]"
+          >
+            LOGIN
+          </button>
         </div>
       </header>
 
@@ -167,7 +177,7 @@ export default function Home() {
       <main className="flex-1 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 p-6 lg:p-12 items-center relative">
         
         {/* Left Side Column: Onboarding Interactive Panel */}
-        <section className="lg:col-span-7 space-y-8 flex flex-col justify-center">
+        <section data-emotional-object="true" className="lg:col-span-7 space-y-8 flex flex-col justify-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF007F]/10 border border-[#FF007F]/30 text-[#FF007F] text-[10px] font-mono uppercase tracking-[0.25em] rounded self-start animate-flicker">
             <AlertTriangle size={12} />
             Caution: High risk of emotional damage
@@ -236,7 +246,7 @@ export default function Home() {
         </section>
 
         {/* Right Side Column: Dynamic Profile Tearing Demo Card */}
-        <section className="lg:col-span-5 h-[500px] flex items-center justify-center relative">
+        <section data-emotional-object="true" className="lg:col-span-5 h-[500px] flex items-center justify-center relative">
           <div className="w-full max-w-sm h-[420px] relative">
             <TearingContainer 
               id="demo-profile" 

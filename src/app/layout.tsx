@@ -2,10 +2,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { inter, ebGaramond, courier, comic, bebasNeue } from "@/lib/fonts";
 import SmoothScroll from "@/components/motion/SmoothScroll";
-import TransitionOverlay from "@/components/motion/TransitionOverlay";
 import CursorTrail from "@/components/cursed-ui/CursorTrail";
+import CartThief from "@/components/cursed-ui/CartThief";
+import CookieConsentMafia from "@/components/cursed-ui/CookieConsentMafia";
+import LoginBossFight from "@/components/cursed-ui/LoginBossFight";
 import PopupManager from "@/components/cursed-ui/PopupManager";
 import ChaosController from "@/features/chaos-engine/ChaosController";
+import TsunamiController from "@/features/chaos-engine/TsunamiController";
+import TsunamiWaterEngine from "@/components/cursed-ui/TsunamiWaterEngine";
+import ChaosOptimizationGuard from "@/components/cursed-ui/ChaosOptimizationGuard";
+import UniversalTearEngine from "@/components/tearing/UniversalTearEngine";
 import { AudioProvider } from "@/components/audio/AudioProvider";
 import Soundscape from "@/components/audio/Soundscape";
 
@@ -31,11 +37,17 @@ export default function RootLayout({
           <div className="scan-overlay" />
           <div className="crt-vignette" />
           <CursorTrail />
+          <CartThief />
+          <CookieConsentMafia />
+          <LoginBossFight />
           <PopupManager />
           <ChaosController />
+          <TsunamiController />
+          <TsunamiWaterEngine />
+          <ChaosOptimizationGuard />
+          <UniversalTearEngine />
           <Soundscape />
           
-          <TransitionOverlay />
           <SmoothScroll>
             {children}
           </SmoothScroll>

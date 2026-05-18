@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, createContext, useContext } from 'react';
 import { useAudioStore } from '@/store/useAudioStore';
+import { useChaosStore } from '@/store/useChaosStore';
 
 interface AudioContextType {
-  play: (sound: 'ERROR' | 'RIP' | 'DIALUP' | 'CLICK' | 'AMBIENCE') => void;
+  play: (sound: 'ERROR' | 'RIP' | 'DIALUP' | 'CLICK' | 'AMBIENCE' | 'SYSTEM_ALARM') => void;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
@@ -138,61 +139,249 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // 5. Programmatic Synthesizer: AMBIENCE Deep Sub-Bass & Minor Key Melancholic Drone
-  const synthAmbience = (ctx: AudioContext, destination: AudioNode) => {
-    if (ambienceNodeRef.current) return; // Already running
+  // Master Refs for Background Music
+  const musicVolumeNodeRef = useRef<GainNode | null>(null);
+  const musicFilterRef = useRef<BiquadFilterNode | null>(null);
+  const musicIntervalRef = useRef<any>(null);
 
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(isMuted ? 0 : globalVolume * 0.22, ctx.currentTime);
-    ambienceNodeRef.current = gain;
+  const { tsunamiState } = useChaosStore();
 
-    // Sub carrier wave (60Hz deep rumble)
-    const subOsc = ctx.createOscillator();
-    subOsc.type = 'sine';
-    subOsc.frequency.setValueAtTime(55, ctx.currentTime); // A1 note
+  // Programmatic Background Romantic Music Sequencer
+  const startRomanticMusic = (ctx: AudioContext, destination: AudioNode) => {
+    if (musicIntervalRef.current) return; // Already running
 
-    // Minor triad sweep pad (A minor chord: A3, C4, E4)
-    const chordFreqs = [220, 261.63, 329.63];
-    const oscs = chordFreqs.map(freq => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    // Master music volume
+    const musicGain = ctx.createGain();
+    musicGain.gain.setValueAtTime(isMuted ? 0 : globalVolume * 0.35, ctx.currentTime);
+    musicVolumeNodeRef.current = musicGain;
 
-      // Low frequency modulation (LFO) for deep drifting sweeps
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(180, ctx.currentTime);
-      filter.Q.setValueAtTime(1, ctx.currentTime);
+    // Submerge filter for underwater lowpass effect
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.setValueAtTime(tsunamiState === 'underwater' ? 320 : 20000, ctx.currentTime);
+    lowpass.Q.setValueAtTime(1, ctx.currentTime);
+    musicFilterRef.current = lowpass;
+
+    musicGain.connect(lowpass);
+    lowpass.connect(destination);
+
+    // Timing metrics
+    const bpm = 75;
+    const beatDuration = 60 / bpm; // 0.8s
+    const barDuration = beatDuration * 4; // 3.2s
+    
+    let currentBar = 0;
+    let nextBarTime = ctx.currentTime + 0.1;
+    
+    // Romantic Fmaj9 - G6 - Em7 - Am9 Progression
+    const chords = [
+      {
+        bass: 87.31, // F2
+        pad: [174.61, 220.00, 261.63, 329.63], // F3, A3, C4, E4
+        melody: [
+          { beat: 0.0, freq: 523.25 }, // C5
+          { beat: 1.0, freq: 659.25 }, // E5
+          { beat: 2.0, freq: 783.99 }, // G5
+          { beat: 3.0, freq: 880.00 }  // A5
+        ]
+      },
+      {
+        bass: 98.00, // G2
+        pad: [196.00, 246.94, 293.66, 392.00], // G3, B3, D4, G4
+        melody: [
+          { beat: 0.0, freq: 493.88 }, // B4
+          { beat: 1.0, freq: 587.33 }, // D5
+          { beat: 2.0, freq: 783.99 }, // G5
+          { beat: 3.0, freq: 987.77 }  // B5
+        ]
+      },
+      {
+        bass: 82.41, // E2
+        pad: [164.81, 196.00, 246.94, 293.66], // E3, G3, B3, D4
+        melody: [
+          { beat: 0.0, freq: 392.00 }, // G4
+          { beat: 1.0, freq: 493.88 }, // B4
+          { beat: 2.0, freq: 659.25 }, // E5
+          { beat: 3.0, freq: 783.99 }  // G5
+        ]
+      },
+      {
+        bass: 110.00, // A2
+        pad: [220.00, 261.63, 329.63, 392.00], // A3, C4, E4, G4
+        melody: [
+          { beat: 0.0, freq: 440.00 }, // A4
+          { beat: 1.0, freq: 523.25 }, // C5
+          { beat: 2.0, freq: 659.25 }, // E5
+          { beat: 3.0, freq: 783.99 }  // G5
+        ]
+      }
+    ];
+
+    const scheduleBar = (barIndex: number, startTime: number) => {
+      const data = chords[barIndex % chords.length];
+      const now = startTime;
+      const vol = isMuted ? 0 : globalVolume;
+
+      // 1. Deep Bass line
+      const bassOsc = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+      bassOsc.type = 'sine';
+      bassOsc.frequency.setValueAtTime(data.bass, now);
       
-      osc.connect(filter);
-      filter.connect(gain);
-      return osc;
-    });
+      bassGain.gain.setValueAtTime(0, now);
+      bassGain.gain.linearRampToValueAtTime(vol * 0.3, now + 0.15);
+      bassGain.gain.setValueAtTime(vol * 0.3, now + barDuration - 0.4);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, now + barDuration);
+      
+      bassOsc.connect(bassGain);
+      bassGain.connect(musicGain);
+      
+      bassOsc.start(now);
+      bassOsc.stop(now + barDuration);
 
-    subOsc.connect(gain);
-    gain.connect(destination);
+      // 2. Soft Chord Pad
+      data.pad.forEach((freq) => {
+        const padOsc = ctx.createOscillator();
+        const padGain = ctx.createGain();
+        padOsc.type = 'triangle';
+        padOsc.frequency.setValueAtTime(freq, now);
+        
+        padGain.gain.setValueAtTime(0, now);
+        padGain.gain.linearRampToValueAtTime(vol * 0.12, now + 0.6);
+        padGain.gain.setValueAtTime(vol * 0.12, now + barDuration - 0.6);
+        padGain.gain.exponentialRampToValueAtTime(0.001, now + barDuration);
+        
+        const padFilter = ctx.createBiquadFilter();
+        padFilter.type = 'lowpass';
+        padFilter.frequency.setValueAtTime(650, now);
+        
+        padOsc.connect(padFilter);
+        padFilter.connect(padGain);
+        padGain.connect(musicGain);
+        
+        padOsc.start(now);
+        padOsc.stop(now + barDuration);
+      });
 
-    subOsc.start();
-    oscs.forEach(o => o.start());
+      // 3. Sparkling Romantic Music Box Bells
+      data.melody.forEach((note) => {
+        const noteTime = now + note.beat * beatDuration;
+        
+        const melOsc = ctx.createOscillator();
+        const melGain = ctx.createGain();
+        
+        melOsc.type = 'sine';
+        melOsc.frequency.setValueAtTime(note.freq, noteTime);
+        
+        melGain.gain.setValueAtTime(0, noteTime);
+        melGain.gain.linearRampToValueAtTime(vol * 0.24, noteTime + 0.03);
+        melGain.gain.exponentialRampToValueAtTime(0.001, noteTime + beatDuration * 1.6);
+        
+        const melFilter = ctx.createBiquadFilter();
+        melFilter.type = 'highpass';
+        melFilter.frequency.setValueAtTime(320, noteTime);
+        
+        melOsc.connect(melFilter);
+        melFilter.connect(melGain);
+        melGain.connect(musicGain);
+        
+        melOsc.start(noteTime);
+        melOsc.stop(noteTime + beatDuration * 1.6);
+      });
+    };
+
+    const tick = () => {
+      const lookahead = 0.45;
+      while (nextBarTime < ctx.currentTime + lookahead) {
+        scheduleBar(currentBar, nextBarTime);
+        currentBar++;
+        nextBarTime += barDuration;
+      }
+    };
+
+    tick();
+    musicIntervalRef.current = setInterval(tick, 200);
   };
 
-  // Adjust Ambience volume on Zustand global store change
+  // Adjust music volume and mute dynamically
   useEffect(() => {
-    if (ambienceNodeRef.current) {
-      ambienceNodeRef.current.gain.setValueAtTime(isMuted ? 0 : globalVolume * 0.22, audioCtxRef.current?.currentTime || 0);
+    if (musicVolumeNodeRef.current && audioCtxRef.current) {
+      const now = audioCtxRef.current.currentTime;
+      musicVolumeNodeRef.current.gain.setTargetAtTime(
+        isMuted ? 0 : globalVolume * 0.35,
+        now,
+        0.05
+      );
     }
   }, [globalVolume, isMuted]);
+
+  // Smoothly muffle background music when underwater
+  useEffect(() => {
+    if (musicFilterRef.current && audioCtxRef.current) {
+      const now = audioCtxRef.current.currentTime;
+      if (tsunamiState === 'underwater') {
+        musicFilterRef.current.frequency.setTargetAtTime(320, now, 0.3);
+      } else {
+        musicFilterRef.current.frequency.setTargetAtTime(20000, now, 0.3);
+      }
+    }
+  }, [tsunamiState]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      if (musicIntervalRef.current) {
+        clearInterval(musicIntervalRef.current);
+      }
       if (audioCtxRef.current) {
         audioCtxRef.current.close();
       }
     };
   }, []);
 
-  const play = (sound: 'ERROR' | 'RIP' | 'DIALUP' | 'CLICK' | 'AMBIENCE') => {
+  // 6. Programmatic Synthesizer: SYSTEM ALARM (Loud 5-second digital "bee-bee")
+  const synthAlarm = (ctx: AudioContext, destination: AudioNode) => {
+    const now = ctx.currentTime;
+    const duration = 5.0; // 5 seconds alarm
+
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    osc1.type = 'square';
+    osc2.type = 'sawtooth';
+
+    // Dissonant beating alarm frequencies
+    osc1.frequency.setValueAtTime(880, now); // A5 note
+    osc2.frequency.setValueAtTime(884, now); // 4Hz beat frequency
+
+    gainNode.gain.setValueAtTime(0, now);
+
+    const pulseInterval = 0.4; // beep every 400ms
+    const beepLength = 0.15; // 150ms beeps
+
+    for (let t = 0; t < duration; t += pulseInterval) {
+      const tStart = now + t;
+      if (tStart + beepLength > now + duration) break;
+
+      gainNode.gain.setValueAtTime(0, tStart);
+      gainNode.gain.linearRampToValueAtTime(isMuted ? 0 : globalVolume * 0.85, tStart + 0.01);
+      gainNode.gain.setValueAtTime(isMuted ? 0 : globalVolume * 0.85, tStart + beepLength - 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, tStart + beepLength);
+    }
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(destination);
+
+    osc1.start(now);
+    osc2.start(now);
+
+    osc1.stop(now + duration);
+    osc2.stop(now + duration);
+  };
+
+  const play = (sound: 'ERROR' | 'RIP' | 'DIALUP' | 'CLICK' | 'AMBIENCE' | 'SYSTEM_ALARM') => {
     try {
       const ctx = getAudioContext();
       const dest = ctx.destination;
@@ -211,7 +400,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           synthRip(ctx, dest);
           break;
         case 'AMBIENCE':
-          synthAmbience(ctx, dest);
+          // Ambience plays our gorgeous looping romantic song instead of a simple hum!
+          startRomanticMusic(ctx, dest);
+          break;
+        case 'SYSTEM_ALARM':
+          synthAlarm(ctx, dest);
           break;
       }
     } catch (e) {
