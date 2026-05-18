@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  --font-inter: var(--font-inter);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  --font-cursed: var(--font-cursed);
+  --font-bebas: var(--font-bebas);
+
+  --color-background: #080208;
+  --color-foreground: #FFFFFF;
+  --color-main: #FF007F;
+  --color-danger: #FF0000;
+  --color-accent: #8A2BE2;
+  --color-success: #32CD32;
+  --color-warning: #FF8C00;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    background-image: radial-gradient(circle at 50% 50%, #150518 0%, #030005 100%);
+    color: var(--color-foreground);
+    overflow-x: hidden;
+    font-family: var(--font-inter);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-bebas);
+    letter-spacing: 0.05em;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .font-cursed {
+    font-family: var(--font-cursed);
+  }
+
+  .font-bebas {
+    font-family: var(--font-bebas);
+  }
+}
+
+/* --- THE NOISE & SCANLINE OVERLAY --- */
+.scan-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.15;
+  z-index: 9998;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.1) 50%
+  ),
+  linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 3px 100%;
+}
+
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.06;
+  z-index: 9999;
+  pointer-events: none;
+  background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+}
+
+/* --- CURSED ANIMATIONS --- */
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.9; }
+  15% { opacity: 0.95; }
+  20% { opacity: 0.98; }
+  25% { opacity: 0.95; }
+  30% { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+
+.animate-flicker {
+  animation: flicker 0.15s infinite;
+}
+
+/* CRT Vignette */
+.crt-vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: inset 0 0 150px rgba(0,0,0,0.5);
+  z-index: 9997;
+  pointer-events: none;
+}
+
+/* GPU Acceleration utility for high-stress motion layers */
+.gpu-accelerated {
+  will-change: transform, opacity, filter, clip-path;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
