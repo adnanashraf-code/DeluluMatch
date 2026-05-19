@@ -297,6 +297,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const speakSlang = () => {
     if (typeof window === "undefined") return;
+    if (tsunamiState === 'arrival' || tsunamiState === 'collapse' || tsunamiState === 'underwater' || tsunamiState === 'void') {
+      return; // AI voice banned during active tsunami flooding
+    }
 
     const voice = hindiVoiceRef.current;
     const hasHindi = !voice || voice.lang.startsWith("hi");
@@ -320,6 +323,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") {
       if (callback) callback();
       return;
+    }
+    if (tsunamiState === 'arrival' || tsunamiState === 'collapse' || tsunamiState === 'underwater' || tsunamiState === 'void') {
+      if (callback) callback();
+      return; // AI voice banned during active tsunami flooding
     }
 
     if (window.speechSynthesis) {
@@ -425,6 +432,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   const musicVolumeNodeRef = useRef<GainNode | null>(null);
   const musicFilterRef = useRef<BiquadFilterNode | null>(null);
   const musicIntervalRef = useRef<any>(null);
+
+  // Procedural Ocean Wave Synthesizer Refs
+  const waterSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const waterGainRef = useRef<GainNode | null>(null);
+  const waterFilterRef = useRef<BiquadFilterNode | null>(null);
 
   const { tsunamiState } = useChaosStore();
 
@@ -594,6 +606,99 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     musicIntervalRef.current = setInterval(tick, 200);
   };
 
+  // Stop background music sequencer completely
+  const stopRomanticMusic = () => {
+    if (musicIntervalRef.current) {
+      clearInterval(musicIntervalRef.current);
+      musicIntervalRef.current = null;
+    }
+    if (musicVolumeNodeRef.current) {
+      try {
+        const now = audioCtxRef.current ? audioCtxRef.current.currentTime : 0;
+        musicVolumeNodeRef.current.gain.cancelScheduledValues(now);
+        musicVolumeNodeRef.current.gain.setValueAtTime(musicVolumeNodeRef.current.gain.value, now);
+        musicVolumeNodeRef.current.gain.linearRampToValueAtTime(0, now + 0.4);
+      } catch (e) {}
+      musicVolumeNodeRef.current = null;
+    }
+  };
+
+  // Real-time Procedural Rushing Water Wave Synthesizer
+  const startWaterSound = () => {
+    try {
+      const ctx = getAudioContext();
+      if (waterSourceRef.current) return; // Already running
+
+      const bufferSize = ctx.sampleRate * 6; // 6-second looping noise buffer
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1; // Pure White Noise
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // Resonant Lowpass Filter to simulate moving wave crests
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(280, ctx.currentTime);
+      filter.Q.setValueAtTime(3.5, ctx.currentTime);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      // Smooth fade-in
+      gain.gain.linearRampToValueAtTime(isMuted ? 0 : globalVolume * 1.5, ctx.currentTime + 1.2);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start(0);
+
+      waterSourceRef.current = noise;
+      waterFilterRef.current = filter;
+      waterGainRef.current = gain;
+
+      // Slowly sweep filter cutoff up and down for crashing water wave simulation
+      let direction = 1;
+      const sweep = () => {
+        if (!waterFilterRef.current || !audioCtxRef.current) return;
+        const now = audioCtxRef.current.currentTime;
+        direction = direction === 1 ? -1 : 1;
+        const targetFreq = direction === 1 ? 680 : 160;
+        waterFilterRef.current.frequency.setTargetAtTime(targetFreq, now, 1.1);
+        setTimeout(sweep, 1200);
+      };
+      sweep();
+
+    } catch (e) {
+      console.warn("Could not trigger water wave synthesis:", e);
+    }
+  };
+
+  const stopWaterSound = () => {
+    if (waterGainRef.current && audioCtxRef.current) {
+      const now = audioCtxRef.current.currentTime;
+      try {
+        waterGainRef.current.gain.cancelScheduledValues(now);
+        waterGainRef.current.gain.setValueAtTime(waterGainRef.current.gain.value, now);
+        waterGainRef.current.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+      } catch (e) {}
+    }
+    setTimeout(() => {
+      if (waterSourceRef.current) {
+        try {
+          waterSourceRef.current.stop();
+        } catch (e) {}
+        waterSourceRef.current = null;
+      }
+      waterFilterRef.current = null;
+      waterGainRef.current = null;
+    }, 1100);
+  };
+
   // Adjust music volume and mute dynamically
   useEffect(() => {
     if (musicVolumeNodeRef.current && audioCtxRef.current) {
@@ -606,14 +711,28 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   }, [globalVolume, isMuted]);
 
-  // Smoothly muffle background music when underwater
+  // Dynamic audio manager responding to active tsunami phases
   useEffect(() => {
-    if (musicFilterRef.current && audioCtxRef.current) {
-      const now = audioCtxRef.current.currentTime;
-      if (tsunamiState === "underwater") {
-        musicFilterRef.current.frequency.setTargetAtTime(320, now, 0.3);
-      } else {
-        musicFilterRef.current.frequency.setTargetAtTime(20000, now, 0.3);
+    if (
+      tsunamiState === 'arrival' ||
+      tsunamiState === 'collapse' ||
+      tsunamiState === 'underwater' ||
+      tsunamiState === 'void'
+    ) {
+      // 1. Stop background music sequencer completely
+      stopRomanticMusic();
+      // 2. Terminate any active speech synthesis
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      // 3. Trigger procedural water/wave sound generator
+      startWaterSound();
+    } else if (tsunamiState === 'idle' || tsunamiState === 'reconstruction') {
+      // 1. Fade out and stop procedural ocean sounds
+      stopWaterSound();
+      // 2. Restart background music sequencer
+      if (audioCtxRef.current && !musicIntervalRef.current) {
+        startRomanticMusic(audioCtxRef.current, audioCtxRef.current.destination);
       }
     }
   }, [tsunamiState]);
