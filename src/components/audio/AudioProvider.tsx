@@ -714,6 +714,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   // Dynamic audio manager responding to active tsunami phases
   useEffect(() => {
     if (
+      tsunamiState === 'warning' ||
       tsunamiState === 'arrival' ||
       tsunamiState === 'collapse' ||
       tsunamiState === 'underwater' ||
