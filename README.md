@@ -31,26 +31,28 @@ graph TD
 * **The Chaos:** The landing page features a fully realistic, real-time wave simulator that floods the screen dynamically.
 * **Tech Stack:** Powered by HTML5 2D Canvas context rendering, combining sine-wave propagation matrices and particle spray buffers to simulate organic water rising.
 
-### 2. 🧸 High-Fidelity Three.js Breakup Heart Engine
-* **The Centerpiece:** Located on the **Thank You** page under the custom receipt printer.
-* **The Animation:** Renders a 3D polygonal low-poly boy and girl character standing on glass blocks with an animated wireframe heart in between them.
+### 2. 🧸 High-Fidelity Three.js Match Card & Breakup Heart Engine
+* **Interactive Marketplace 3D Card:** Renders a gorgeous, rotating, real-time 3D floating particle card in the sidebar using **Three.js**. It maps hundreds of glowing neon pink particles forming an abstract wireframe heart that spins and undulates dynamically. It is fully responsive and automatically updates its aspect ratio upon window resizing.
+* **The centerpieces:** Located on the **Thank You** page under the custom receipt printer. Renders 3D polygonal character models standing on glass blocks with an animated wireframe heart in between them.
 * **Interactive Physics:** As the countdown approaches zero, the wireframe heart shatters and explodes into hundreds of glowing 3D vector shards floating into the canvas.
 
-### 3. 💥 Three.js Glass Shatter Overlay
-* **The Grand Finale:** 15 seconds after reaching the Thank You page, a loud glass fracturing sound plays, and a Three.js 3D viewport breaks the screen into realistic, jagged shards of reflecting glass.
-* **Loopback Hold:** The screen goes completely pitch black for 10 seconds of absolute emotional reflection before reloading the onboarding page fresh from scratch!
+### 3. 🔊 Cursed Web Audio Synthesiser & 2.0 AI Voice Ducking Engine
+* **Endless 135 BPM Chiptune Loop:** Features a real-time, custom synthesizer loop playing an annoying, hyperactive, repetitive diminished chromatic chord progression at a rapid `135 BPM` tempo. Built using raw, piercing Web Audio nodes (buzzy sawtooth chords for pads, fast square-wave bells for chimes) to create the perfect cursed elevator atmosphere.
+* **Immediate Autoplay:** Attempts to start playing the background loop instantly on system load, falling back to a click/keypress event listener if browser security policies block initial autoplay.
+* **2.0 AI Voice Ducking Priority:** Speaks randomly generated Indian Hindi slang notifications utilizing Google's neural TTS streaming API. 
+* **Bulletproof Fallback & Ducking:** Immune to browser Web Audio CORS silencing blocks. It ducks the background music automatically to virtual silence (`0.01` volume) during speech playback, delivering a highly prominent relative voice boost of `2.0`. Features an offline, Premium local Speech Synthesis backup (calibrated to `0.88` speed and standard pitch) to guarantee vocal notifications under all circumstances.
 
-### 4. 🧲 High-Performance Tearing Container Physics
+### 4. 🚨 classified Purge & Reload Sequence
+* **Purge Overlays:** When active popups reach a threshold of 5, the page triggers a system-wide breach scanning sweep, leading to the classified `[ DIGNITY REDACTED ]` overlay.
+* **Automatic Reload:** Once the emotional core memory reset sequence completes (Stage 4), the system calls an automated `window.location.reload()`, performing a clean browser refresh back to a pristine, fresh state.
+
+### 5. 🧲 High-Performance Tearing Container Physics
 * **Mechanics:** Enables horizontal and diagonal tears on user profile cards and registration contracts.
 * **Underlayers:** The card splits cleanly under the user's cursor to expose warning summaries ("Still follows ex's Spotify hourly").
 
-### 5. 🎯 Cursed Cursor Trail Engine
+### 6. 🎯 Cursed Cursor Trail Engine
 * **Aesthetics:** Custom-drawn Y2K emoji cursor trail with ghost particles (`💔` and `🤡`) tracking mouse movement with elastic inertia.
 * **Form Immunity:** Features high-precision DOM element tracking that instantly hides all custom cursor elements and displays the native browser cursor the moment the pointer hovers over text inputs, selections, Roman numerals, or compliance form containers.
-
-### 6. 🧹 Mount-Level Memory Cleansing
-* **The Clean Reload:** Every single page transition is executed using full browser navigation (`window.location.href`) to reset the Zustand memory footprint.
-* **Immediate Flush:** Every page mounts with a `clearPopups()` useEffect hook that guarantees no residual errors carry over from the previous view.
 
 ---
 
