@@ -297,8 +297,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const speakSlang = () => {
     if (typeof window === "undefined") return;
-    if (tsunamiState === 'arrival' || tsunamiState === 'collapse' || tsunamiState === 'underwater' || tsunamiState === 'void') {
-      return; // AI voice banned during active tsunami flooding
+    if (tsunamiState !== 'idle' && tsunamiState !== 'reconstruction') {
+      return; // Random slangs banned immediately on warning and flooding
     }
 
     const voice = hindiVoiceRef.current;
@@ -324,9 +324,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       if (callback) callback();
       return;
     }
-    if (tsunamiState === 'arrival' || tsunamiState === 'collapse' || tsunamiState === 'underwater' || tsunamiState === 'void') {
+    if (tsunamiState !== 'idle' && tsunamiState !== 'warning' && tsunamiState !== 'reconstruction') {
       if (callback) callback();
-      return; // AI voice banned during active tsunami flooding
+      return; // Banned during active tsunami flooding, allowed during warning stage for the alert itself
     }
 
     if (window.speechSynthesis) {
@@ -606,7 +606,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     musicIntervalRef.current = setInterval(tick, 200);
   };
 
-  // Stop background music sequencer completely
+  // Stop background music sequencer completely and immediately
   const stopRomanticMusic = () => {
     if (musicIntervalRef.current) {
       clearInterval(musicIntervalRef.current);
@@ -617,7 +617,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         const now = audioCtxRef.current ? audioCtxRef.current.currentTime : 0;
         musicVolumeNodeRef.current.gain.cancelScheduledValues(now);
         musicVolumeNodeRef.current.gain.setValueAtTime(musicVolumeNodeRef.current.gain.value, now);
-        musicVolumeNodeRef.current.gain.linearRampToValueAtTime(0, now + 0.4);
+        musicVolumeNodeRef.current.gain.linearRampToValueAtTime(0, now + 0.02); // Instant cutoff (20ms)
       } catch (e) {}
       musicVolumeNodeRef.current = null;
     }
@@ -648,8 +648,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0, ctx.currentTime);
-      // Smooth fade-in
-      gain.gain.linearRampToValueAtTime(isMuted ? 0 : globalVolume * 1.5, ctx.currentTime + 1.2);
+      // Instant wave crash fade-in (200ms)
+      gain.gain.linearRampToValueAtTime(isMuted ? 0 : globalVolume * 1.5, ctx.currentTime + 0.2);
 
       noise.connect(filter);
       filter.connect(gain);
@@ -684,7 +684,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       try {
         waterGainRef.current.gain.cancelScheduledValues(now);
         waterGainRef.current.gain.setValueAtTime(waterGainRef.current.gain.value, now);
-        waterGainRef.current.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+        waterGainRef.current.gain.linearRampToValueAtTime(0, now + 0.02); // Instant wave fade-out
       } catch (e) {}
     }
     setTimeout(() => {
@@ -696,7 +696,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       }
       waterFilterRef.current = null;
       waterGainRef.current = null;
-    }, 1100);
+    }, 50);
   };
 
   // Adjust music volume and mute dynamically
@@ -713,25 +713,31 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   // Dynamic audio manager responding to active tsunami phases
   useEffect(() => {
-    if (
-      tsunamiState === 'warning' ||
+    if (tsunamiState === 'warning') {
+      // 1. Stop background music sequencer instantly
+      stopRomanticMusic();
+      // 2. Terminate any active speech synthesis (except the incoming warning itself)
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } else if (
       tsunamiState === 'arrival' ||
       tsunamiState === 'collapse' ||
       tsunamiState === 'underwater' ||
       tsunamiState === 'void'
     ) {
-      // 1. Stop background music sequencer completely
+      // 1. Ensure background music sequencer is completely stopped
       stopRomanticMusic();
-      // 2. Terminate any active speech synthesis
+      // 2. Terminate speech synthesis
       if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
-      // 3. Trigger procedural water/wave sound generator
+      // 3. Trigger procedural water/wave sound generator immediately
       startWaterSound();
     } else if (tsunamiState === 'idle' || tsunamiState === 'reconstruction') {
-      // 1. Fade out and stop procedural ocean sounds
+      // 1. Stop procedural ocean sounds immediately
       stopWaterSound();
-      // 2. Restart background music sequencer
+      // 2. Restart background music sequencer immediately
       if (audioCtxRef.current && !musicIntervalRef.current) {
         startRomanticMusic(audioCtxRef.current, audioCtxRef.current.destination);
       }

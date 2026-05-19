@@ -57,6 +57,9 @@ export default function TsunamiController() {
     triggerShake(5000);
     triggerGlitch(2500);
 
+    // Wait 400ms for error popup to appear completely before speaking
+    await sleep(400);
+
     // Speak the tsunami statement
     const hasHindi = typeof window !== 'undefined' && window.speechSynthesis &&
       window.speechSynthesis.getVoices().some(v => v.lang.startsWith('hi'));
