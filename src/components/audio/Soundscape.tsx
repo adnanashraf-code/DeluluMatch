@@ -7,6 +7,15 @@ export default function Soundscape() {
   const { play } = useSound();
   const [hasInteracted, setHasInteracted] = useState(false);
 
+  // Attempt immediate autoplay on system load/mount
+  useEffect(() => {
+    try {
+      play('AMBIENCE');
+    } catch (e) {
+      console.warn("[DeluluMatch Soundscape] Immediate autoplay blocked, waiting for user gesture:", e);
+    }
+  }, [play]);
+
   useEffect(() => {
     const handleInteraction = () => {
       if (!hasInteracted) {

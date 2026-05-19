@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import TearingContainer from '@/components/tearing/TearingContainer';
 import { useChaosStore } from '@/store/useChaosStore';
@@ -9,8 +10,9 @@ import { Heart, X, AlertOctagon, Sparkles, MessageSquare, ShieldAlert, Award, St
 import { useRouter } from 'next/navigation';
 import ChaosErrorEngine from '@/components/cursed-ui/ChaosErrorEngine';
 import EmotionalMeltdown from '@/components/cursed-ui/EmotionalMeltdown';
+import ThreeDPortrait from '@/components/cursed-ui/ThreeDPortrait';
 
-// Toxic profiles data
+// Mock profile datasets for matching algorithm simulations
 const TOXIC_PROFILES = [
   {
     id: 'karan_22',
@@ -71,7 +73,9 @@ export default function MarketplacePage() {
   const { addPopup, triggerShake, triggerGlitch, incrementDamage, addToCart, cartItemsCount, setIsBossFighting, popups, clearPopups } = useChaosStore();
 
   // Clear all popups on mount
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
     clearPopups();
   }, [clearPopups]);
 
@@ -79,6 +83,10 @@ export default function MarketplacePage() {
   const [activeProfileIndex, setActiveProfileIndex] = useState(0);
   const [filterLoading, setFilterLoading] = useState<string | null>(null);
   const [filterProgress, setFilterProgress] = useState(0);
+  
+  // Custom proceed meltdown variables
+  const [meltdownActive, setMeltdownActive] = useState(false);
+  const [meltdownCount, setMeltdownCount] = useState(0);
 
   // Toxic AI Advisor variables
   const [aiChats, setAiChats] = useState<string[]>([
@@ -130,6 +138,63 @@ export default function MarketplacePage() {
       // Loop profiles back
       setActiveProfileIndex(0);
     }
+  };
+
+  // 100-error, 10-second silent beeping meltdown redirection sequence!
+  const startProceedMeltdown = () => {
+    if (meltdownActive) return;
+    setMeltdownActive(true);
+    setMeltdownCount(0);
+    clearPopups();
+    triggerShake(10500);
+    triggerGlitch(10500);
+
+    let count = 0;
+    
+    // Spawn popups rapidly (1 popup every 80ms. 100 popups in 8 seconds)
+    const interval = setInterval(() => {
+      count++;
+      if (count <= 100) {
+        setMeltdownCount(count);
+
+        // Fast digital alarm beeps and clicks
+        if (count % 3 === 0) {
+          play('SYSTEM_ALARM');
+        } else {
+          play('CLICK');
+        }
+
+        // Add randomized error popup (silent, no speech)
+        const errorTitles = [
+          '⚠️ SYSTEM DAMAGE', '💔 EMOTIONAL VOLATILITY', '🚨 PROFILE FAULT',
+          '🤡 STALKING DETECTED', '🥀 RETROGRADE RELAPSE', '🔥 INSTABILITY FAULT',
+          '💀 SELF-RESPECT ZERO', '🩹 RELATION OVERLOAD', '💬 TEXT BLOCK OVERFLOW'
+        ];
+        const errorMsgs = [
+          'Attachment style set to Highly Avoidant.',
+          'Dry texting threshold exceeded critical parameters.',
+          'Checked Spotify listening history of Ex 17 times.',
+          'Unable to ignore Ex. Re-evaluating situationship parameters.',
+          'We suggest double-texting immediately. Good luck.'
+        ];
+
+        addPopup({
+          title: errorTitles[Math.floor(Math.random() * errorTitles.length)],
+          content: errorMsgs[Math.floor(Math.random() * errorMsgs.length)] + ` (Flaw: ${count}/100)`,
+          x: Math.random() * 70 + 5,
+          y: Math.random() * 70 + 5,
+          type: Math.random() > 0.5 ? 'warning' : 'toxic'
+        });
+      }
+    }, 80);
+
+    // Redirect strictly at exactly 10 seconds of clicking!
+    setTimeout(() => {
+      clearInterval(interval);
+      play('RIP');
+      clearPopups();
+      router.push('/compliance');
+    }, 10000);
   };
 
   // Trigger fake toxic filter scanners
@@ -362,24 +427,28 @@ export default function MarketplacePage() {
 
                         {/* Portrait Glitch placeholder */}
                         <div className="w-full h-40 bg-zinc-950/80 border border-zinc-800/80 rounded relative flex items-center justify-center group overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent z-10 pointer-events-none" />
                           <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/80 border border-red-500/30 text-red-500 text-[8px] font-mono rounded z-20">
                             CRITICAL RISK
                           </div>
                           
-                          {/* Seductive Y2K Cyber Portrait */}
-                          {activeProfile.image ? (
+                          {/* Seductive Y2K Cyber Portrait with Three.js Particle Heart overlay */}
+                          {activeProfile.image && (
                             <img 
                               src={activeProfile.image} 
                               alt={activeProfile.name}
-                              className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500 filter contrast-125 saturate-110"
+                              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500 filter contrast-125 saturate-110 z-10"
                             />
-                          ) : (
-                            <span className="text-6xl filter drop-shadow-[0_0_15px_rgba(255,0,127,0.3)] animate-pulse">{activeProfile.emoji}</span>
                           )}
+                          
+                          {/* Interactive 3D Three.js Overlay */}
+                          <ThreeDPortrait 
+                            emoji={activeProfile.emoji} 
+                            themeColor={activeProfile.theme.includes('blue') ? '#8A2BE2' : '#FF007F'} 
+                          />
 
                           {/* Dynamic glitch scanline layer */}
-                          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-30 pointer-events-none z-20" />
+                          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-35 pointer-events-none z-20" />
                         </div>
 
                         {/* Bio & Details */}
@@ -450,11 +519,9 @@ export default function MarketplacePage() {
           {/* Route to Page 3 CTA */}
           <div className="pt-2">
             <button
-              onClick={() => {
-                play('DIALUP');
-                router.push('/compliance');
-              }}
-              className="px-6 py-2 border border-[#8A2BE2]/40 text-[#8A2BE2]/80 hover:border-[#8A2BE2] hover:text-white rounded text-[10px] tracking-[0.2em] font-mono uppercase transition-colors"
+              onClick={startProceedMeltdown}
+              disabled={meltdownActive}
+              className="px-6 py-2 border border-[#8A2BE2]/40 text-[#8A2BE2]/80 hover:border-[#8A2BE2] hover:text-white rounded text-[10px] tracking-[0.2em] font-mono uppercase transition-colors disabled:opacity-50"
             >
               [ PROCEED TO COMPLIANCE CENTER &gt; ]
             </button>
@@ -620,6 +687,79 @@ export default function MarketplacePage() {
           <span>🚨 backup attachment files calibrated...</span>
         </motion.div>
       </div>
+
+      {/* 💥 DYNAMIC FULL-SCREEN CYBER MELTDOWN OVERLAY */}
+      {mounted && meltdownActive && createPortal(
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999999999] pointer-events-none flex flex-col items-center justify-center bg-red-950/20 backdrop-blur-[2px] font-mono select-none"
+          >
+            {/* Glowing neon border */}
+            <div className="absolute inset-4 border-2 border-[#FF007F] rounded-lg shadow-[inset_0_0_50px_rgba(255,0,127,0.5),_0_0_30px_rgba(255,0,127,0.3)] animate-pulse" />
+            
+            {/* Pulsing red warning overlays at top and bottom */}
+            <div className="absolute top-0 left-0 right-0 h-16 bg-red-900/40 border-b border-[#FF007F]/40 flex items-center justify-center shadow-[0_4px_30px_rgba(255,0,127,0.2)]">
+              <span className="text-[#FF007F] font-bold text-xs tracking-[0.4em] uppercase animate-pulse">
+                ⚠️ CRITICAL EX-RELATION INSTABILITY OVERLOAD ⚠️
+              </span>
+            </div>
+            
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-red-900/40 border-t border-[#FF007F]/40 flex items-center justify-center shadow-[0_-4px_30px_rgba(255,0,127,0.2)]">
+              <span className="text-white font-bold text-[10px] tracking-[0.2em] uppercase animate-flicker">
+                [ EMOTION ERROR CACHE FLUSHING IN REAL-TIME ]
+              </span>
+            </div>
+
+            {/* Glowing Matrix Center Telemetry */}
+            <div className="bg-black/95 p-8 border border-[#FF007F]/30 rounded-md text-center max-w-md space-y-4 shadow-[0_0_60px_rgba(255,0,127,0.5)] pointer-events-auto relative z-[999999999]">
+              <h2 className="text-[#FF007F] font-bebas text-4xl tracking-wider font-extrabold animate-pulse uppercase leading-none">
+                EMOTION CORE CORRUPTED
+              </h2>
+              
+              <div className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded font-mono text-[10px] text-zinc-400 text-left space-y-1.5">
+                <div className="flex justify-between">
+                  <span>ERROR FLUSH RATE:</span>
+                  <span className="text-pink-500 font-bold">12 ERRORS / SEC</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>TOTAL SPAWNED:</span>
+                  <span className="text-white font-bold">{meltdownCount} / 100</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>SELF-RESPECT STATUS:</span>
+                  <span className="text-red-500 font-bold line-through">COMPROMISED</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>COMPLIANCE DRIFT:</span>
+                  <span className="text-cyan-400 font-bold">CRITICAL</span>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-[8px] text-[#FF007F] uppercase tracking-wider font-bold">
+                  <span>Meltdown Progress</span>
+                  <span>{meltdownCount}%</span>
+                </div>
+                <div className="w-full h-2.5 bg-zinc-950 p-0.5 rounded border border-[#FF007F]/20">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#FF007F] to-[#8A2BE2]"
+                    style={{ width: `${meltdownCount}%` }}
+                  />
+                </div>
+              </div>
+
+              <p className="text-[9px] text-zinc-500 uppercase tracking-widest leading-relaxed">
+                spawning {100 - meltdownCount} more errors before compliance redirection...
+              </p>
+            </div>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
+      )}
 
       <EmotionalMeltdown />
     </div>

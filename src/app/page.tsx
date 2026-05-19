@@ -11,6 +11,7 @@ import { useSound } from '@/components/audio/AudioProvider';
 import { Heart, Activity, AlertTriangle, ShieldAlert } from 'lucide-react';
 import TsunamiController from "@/features/chaos-engine/TsunamiController";
 import TsunamiWaterEngine from "@/components/cursed-ui/TsunamiWaterEngine";
+import ThreeDPortrait from '@/components/cursed-ui/ThreeDPortrait';
 
 export default function Home() {
   const router = useRouter();
@@ -288,10 +289,13 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Profile Picture Placeholder Box with glitch design */}
-                  <div className="w-full h-40 bg-zinc-950/60 border border-zinc-800 rounded relative overflow-hidden flex items-center justify-center">
-                    <div className="absolute inset-0 bg-[#FF007F]/5 animate-pulse" />
-                    <span className="text-4xl">🫣</span>
+                  {/* Profile Picture Placeholder Box with Three.js Particle Heart overlay */}
+                  <div className="w-full h-40 bg-zinc-950/60 border border-zinc-800 rounded relative overflow-hidden flex items-center justify-center group">
+                    {/* Interactive 3D Three.js Overlay */}
+                    <ThreeDPortrait 
+                      emoji="🫣" 
+                      themeColor="#FF007F" 
+                    />
                   </div>
 
                   {/* Name and Basic Traits */}

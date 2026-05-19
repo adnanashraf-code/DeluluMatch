@@ -12,7 +12,7 @@ interface AudioState {
 }
 
 export const useAudioStore = create<AudioState>((set) => ({
-  globalVolume: 0.5,
+  globalVolume: 1.0,
   isMuted: false,
   activeAmbience: null,
   setGlobalVolume: (vol) => set({ globalVolume: vol }),

@@ -60,6 +60,9 @@ export default function ComplianceSystemWipe() {
     setIsActive(false);
     setStage(0);
     hasTriggeredRef.current = false;
+
+    // Refresh page back to clean fresh state
+    window.location.reload();
   };
 
   if (!mounted || !isActive) return null;

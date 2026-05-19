@@ -8,8 +8,10 @@ import { useSound } from '@/components/audio/AudioProvider';
 import { AlertCircle, Terminal, Heart, AlertOctagon, Sparkles } from 'lucide-react';
 import gsap from 'gsap';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default function TsunamiController() {
-  const { play } = useSound();
+  const { play, speak } = useSound();
   const { 
     tsunamiState, 
     setTsunamiState, 
@@ -22,7 +24,7 @@ export default function TsunamiController() {
     popups
   } = useChaosStore();
 
-  const [warnings, setWarnings] = useState<string[]>([]);
+  const [tsunamiTitle, setTsunamiTitle] = useState('tsunami aa gaya bhai teri toh lanka lagne wali hai system ki');
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [debris, setDebris] = useState<{ id: number; char: string; x: number; y: number; scale: number; speed: number }[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -46,163 +48,169 @@ export default function TsunamiController() {
   // 2. Initiate the 6-Stage Cinematic Tsunami Flow
   const initiateTsunami = async () => {
     // ==========================================
-    // STAGE 1: EMOTIONAL WARNING (5 Seconds)
+    // STAGE 1: EMOTIONAL WARNING (ONLY SPEAKS THE CUSTOM HINDI LINE)
     // ==========================================
     setTsunamiState('warning');
-    play('SYSTEM_ALARM'); // 5-second loud pulsing "bee-bee" retro alarm
+    setTsunamiTitle('tsunami aa gaya bhai teri toh lanka lagne wali hai system ki');
+    
+    // Visual alerts only - shake and glitch (No alarm bee-bee sound)
     triggerShake(5000);
     triggerGlitch(2500);
 
-    // Spam toxic warnings
-    const warningList = [
-      '⚠️ EMOTIONAL INSTABILITY LEVELS CRITICAL',
-      '⚠️ SYSTEM DETECTED 5 ACTIVE PROBLEMS',
-      '⚠️ TOXICITY OVERFLOW IMMINENT - RE-CALIBRATING HEART CORES'
-    ];
-    setWarnings(warningList);
+    // Speak the tsunami statement
+    const hasHindi = typeof window !== 'undefined' && window.speechSynthesis &&
+      window.speechSynthesis.getVoices().some(v => v.lang.startsWith('hi'));
+
+    const tsunamiWarningText = hasHindi 
+      ? 'सुनामी आ गया भाई! तेरी तो लंका लगने वाली है सिस्टम की!'
+      : 'Tsunami aa gaya bhai, teri toh lanka lagne wali hai system ki!';
+
+    // Wait for the custom speaking voice alert to finish
+    await new Promise<void>((resolve) => {
+      speak(tsunamiWarningText, () => resolve());
+    });
+
+    // Small delay after speaking ends, before the tsunami hits!
+    await sleep(800);
 
     // ==========================================
     // STAGE 2: TSUNAMI ARRIVAL (2 Seconds)
     // ==========================================
-    setTimeout(() => {
-      setTsunamiState('arrival');
-      play('DIALUP');
-      triggerShake(2000);
-      setWarnings([]);
-    }, 5000); // Trigger after exactly 5 seconds of Stage 1 System Damage alarm
+    setTsunamiState('arrival');
+    play('DIALUP');
+    triggerShake(2000);
+
+    await sleep(2000);
 
     // ==========================================
     // STAGE 3: DELULUMATCH COLLAPSE (1 Second)
     // ==========================================
-    setTimeout(() => {
-      setTsunamiState('collapse');
-      play('RIP');
-      triggerShake(1000);
+    setTsunamiState('collapse');
+    play('RIP');
+    triggerShake(1000);
 
-      // Select all elements tagged with data-emotional-object="true" globally
-      const targetElements = document.querySelectorAll('[data-emotional-object="true"]');
-      originalStyles.current = [];
+    // Select all elements tagged with data-emotional-object="true" globally
+    const targetElements = document.querySelectorAll('[data-emotional-object="true"]');
+    originalStyles.current = [];
 
-      targetElements.forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        // Save baseline styles
-        originalStyles.current.push({
-          element: htmlEl,
-          transform: htmlEl.style.transform || '',
-          transition: htmlEl.style.transition || '',
-          opacity: htmlEl.style.opacity || '1'
-        });
-
-        // Apply physical horizontal leftward sweep (Surging from Right pushes left!)
-        const randomX = -Math.random() * 500 - 350;  // Push violently leftwards (-350px to -850px)
-        const randomY = (Math.random() - 0.5) * 150; // Gentle height floating drift
-        const randomRot = -Math.random() * 45;       // Staggered counter-clockwise spin
-        
-        gsap.to(htmlEl, {
-          x: randomX,
-          y: randomY,
-          rotation: randomRot,
-          opacity: 0.15,
-          duration: 1.4,
-          ease: 'power2.out'
-        });
+    targetElements.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      // Save baseline styles
+      originalStyles.current.push({
+        element: htmlEl,
+        transform: htmlEl.style.transform || '',
+        transition: htmlEl.style.transition || '',
+        opacity: htmlEl.style.opacity || '1'
       });
-    }, 7000); // 5000 + 2000
+
+      // Apply physical horizontal leftward sweep (Surging from Right pushes left!)
+      const randomX = -Math.random() * 500 - 350;  // Push violently leftwards (-350px to -850px)
+      const randomY = (Math.random() - 0.5) * 150; // Gentle height floating drift
+      const randomRot = -Math.random() * 45;       // Staggered counter-clockwise spin
+      
+      gsap.to(htmlEl, {
+        x: randomX,
+        y: randomY,
+        rotation: randomRot,
+        opacity: 0.15,
+        duration: 1.4,
+        ease: 'power2.out'
+      });
+    });
+
+    await sleep(1000);
 
     // ==========================================
     // STAGE 4: UNDERWATER CHAOS STATE (3 Seconds)
     // ==========================================
-    setTimeout(() => {
-      setTsunamiState('underwater');
-      // Dissolve/Clear the 5 warning popups behind the liquid wall
-      clearPopups();
-      play('AMBIENCE'); // Starts/filters our beautiful romantic looping track!
+    setTsunamiState('underwater');
+    // Dissolve/Clear the 5 warning popups behind the liquid wall
+    clearPopups();
+    play('AMBIENCE'); // Starts/filters our beautiful romantic looping track!
 
-      // Spawn floating romantic cyber-debris particles
-      const debrisChars = ['💔', '🤡', '💬', '🫠', '🥀', '🩹', '💀', '👀', '📱', '🔒'];
-      const newDebris = Array.from({ length: 16 }).map((_, i) => ({
-        id: i,
-        char: debrisChars[i % debrisChars.length],
-        x: Math.random() * 100, // percentage x coordinate
-        y: 100,                 // start at bottom
-        scale: Math.random() * 0.8 + 0.8,
-        speed: Math.random() * 2.5 + 1.5
-      }));
-      setDebris(newDebris);
-    }, 8000); // 7000 + 1000
+    // Spawn floating romantic cyber-debris particles
+    const debrisChars = ['💔', '🤡', '💬', '🫠', '🥀', '🩹', '💀', '👀', '📱', '🔒'];
+    const newDebris = Array.from({ length: 16 }).map((_, i) => ({
+      id: i,
+      char: debrisChars[i % debrisChars.length],
+      x: Math.random() * 100, // percentage x coordinate
+      y: 100,                 // start at bottom
+      scale: Math.random() * 0.8 + 0.8,
+      speed: Math.random() * 2.5 + 1.5
+    }));
+    setDebris(newDebris);
+
+    await sleep(3000);
 
     // ==========================================
     // STAGE 5: EMOTIONAL VOID STATE (3.5 Seconds)
     // ==========================================
-    setTimeout(() => {
-      setTsunamiState('void');
-      setDebris([]);
-      play('ERROR');
+    setTsunamiState('void');
+    setDebris([]);
+    play('ERROR');
 
-      // Glitch out target elements to complete void state
-      originalStyles.current.forEach(({ element }) => {
-        gsap.to(element, { opacity: 0, duration: 0.4 });
-      });
+    // Glitch out target elements to complete void state
+    originalStyles.current.forEach(({ element }) => {
+      gsap.to(element, { opacity: 0, duration: 0.4 });
+    });
 
-      // Typewriter log simulation
-      const logs = [
-        '>> [SYS-RCC] RELATIONSHIP DATA CRITICAL FAULT...',
-        '>> [SYS-RCC] PURGING ACTIVE SITUATIONSHIPS (5/5)...',
-        '>> [SYS-RCC] PURGING EX STORY NOTIFICATIONS...',
-        '>> [SYS-RCC] DRY TEXTING CACHE COMPLETED...',
-        '>> [SYS-RCC] SYSTEM STABILITY: RESTORED 100%'
-      ];
+    // Typewriter log simulation
+    const logs = [
+      '>> [SYS-RCC] RELATIONSHIP DATA CRITICAL FAULT...',
+      '>> [SYS-RCC] PURGING ACTIVE SITUATIONSHIPS (5/5)...',
+      '>> [SYS-RCC] PURGING EX STORY NOTIFICATIONS...',
+      '>> [SYS-RCC] DRY TEXTING CACHE COMPLETED...',
+      '>> [SYS-RCC] SYSTEM STABILITY: RESTORED 100%'
+    ];
 
-      setTerminalLogs([]);
-      logs.forEach((log, index) => {
-        setTimeout(() => {
-          setTerminalLogs(prev => [...prev, log]);
-          play('CLICK');
-        }, index * 600);
-      });
-    }, 11000); // 8000 + 3000
+    setTerminalLogs([]);
+    for (let i = 0; i < logs.length; i++) {
+      await sleep(600);
+      setTerminalLogs(prev => [...prev, logs[i]]);
+      play('CLICK');
+    }
+
+    await sleep(1500);
 
     // ==========================================
     // STAGE 6: CINEMATIC RECONSTRUCTION (2.5 Seconds)
     // ==========================================
-    setTimeout(() => {
-      setTsunamiState('reconstruction');
-      setTerminalLogs([]);
-      play('DIALUP');
+    setTsunamiState('reconstruction');
+    setTerminalLogs([]);
+    play('DIALUP');
 
-      // Staggered reconstruction back to exact baseline
-      originalStyles.current.forEach(({ element, transform, opacity }, index) => {
-        gsap.to(element, {
-          x: 0,
-          y: 0,
-          rotation: 0,
-          opacity: 1,
-          duration: 1.8,
-          delay: (index % 12) * 0.05,
-          ease: 'elastic.out(1, 0.75)',
-          onComplete: () => {
-            // Restore exact base styling settings
-            element.style.transform = transform;
-            element.style.opacity = opacity;
-          }
-        });
+    // Staggered reconstruction back to exact baseline
+    originalStyles.current.forEach(({ element, transform, opacity }, index) => {
+      gsap.to(element, {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        opacity: 1,
+        duration: 1.8,
+        delay: (index % 12) * 0.05,
+        ease: 'elastic.out(1, 0.75)',
+        onComplete: () => {
+          // Restore exact base styling settings
+          element.style.transform = transform;
+          element.style.opacity = opacity;
+        }
       });
-    }, 14500); // 11000 + 3500
+    });
+
+    await sleep(2500);
 
     // ==========================================
     // RESET TO IDLE (Completely Clean Screen!)
     // ==========================================
-    setTimeout(() => {
-      setTsunamiState('idle');
-      play('CLICK');
-      addPopup({
-        title: '🟢 STABILIZED',
-        content: 'Emotional tsunami successfully handled. System matches restored. Carrying on.',
-        x: 35,
-        y: 40,
-        type: 'alert'
-      });
-    }, 17000);
+    setTsunamiState('idle');
+    play('CLICK');
+    addPopup({
+      title: '🟢 STABILIZED',
+      content: 'Emotional tsunami successfully handled. System matches restored. Carrying on.',
+      x: 35,
+      y: 40,
+      type: 'alert'
+    });
   };
 
   if (!mounted || tsunamiState === 'idle') return null;
@@ -216,21 +224,27 @@ export default function TsunamiController() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="p-8 bg-black/90 border border-red-500 rounded-lg max-w-md text-center space-y-4 shadow-[0_0_50px_rgba(239,68,68,0.4)]"
+            className="p-8 bg-black/90 border border-red-500 rounded-lg max-w-lg text-center space-y-5 shadow-[0_0_50px_rgba(239,68,68,0.4)] pointer-events-auto"
           >
             <AlertOctagon size={48} className="text-red-500 mx-auto animate-bounce" />
-            <h3 className="text-red-500 text-2xl font-bold tracking-widest animate-pulse font-bebas">
-              SYSTEM DAMAGE OVERFLOW
-            </h3>
             
-            <div className="space-y-1 text-xs text-zinc-300 text-left">
-              {warnings.map((warn, i) => (
-                <div key={i} className="flex gap-2 items-center text-red-400">
-                  <AlertCircle size={12} className="shrink-0" />
-                  <span>{warn}</span>
-                </div>
-              ))}
+            {/* System and Emotional lines above the error! */}
+            <div className="space-y-2 border-b border-zinc-900 pb-3 text-left">
+              <div className="text-red-400 text-[10px] tracking-wider font-bold">
+                ⚠️ EMOTIONAL INSTABILITY LEVELS CRITICAL
+              </div>
+              <div className="text-red-400 text-[10px] tracking-wider font-bold">
+                ⚠️ SYSTEM DETECTED 5 ACTIVE PROBLEMS
+              </div>
+              <div className="text-red-400 text-[10px] tracking-wider font-bold">
+                ⚠️ TOXICITY OVERFLOW IMMINENT - RE-CALIBRATING HEART CORES
+              </div>
             </div>
+
+            {/* Error Title */}
+            <h3 className="text-red-500 text-2xl font-bold tracking-widest animate-pulse font-bebas uppercase max-w-md mx-auto leading-tight">
+              {tsunamiTitle}
+            </h3>
             
             <div className="text-[10px] text-zinc-600 animate-pulse pt-2 border-t border-zinc-900 text-center uppercase">
               5 SEVERE FLAWS TRIGGERED TSUNAMI...
