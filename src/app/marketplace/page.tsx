@@ -8,6 +8,7 @@ import { useSound } from '@/components/audio/AudioProvider';
 import { Heart, X, AlertOctagon, Sparkles, MessageSquare, ShieldAlert, Award, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ChaosErrorEngine from '@/components/cursed-ui/ChaosErrorEngine';
+import EmotionalMeltdown from '@/components/cursed-ui/EmotionalMeltdown';
 
 // Toxic profiles data
 const TOXIC_PROFILES = [
@@ -67,7 +68,12 @@ const FILTER_OPTIONS = [
 export default function MarketplacePage() {
   const router = useRouter();
   const { play } = useSound();
-  const { addPopup, triggerShake, triggerGlitch, incrementDamage, addToCart, cartItemsCount, setIsBossFighting } = useChaosStore();
+  const { addPopup, triggerShake, triggerGlitch, incrementDamage, addToCart, cartItemsCount, setIsBossFighting, popups, clearPopups } = useChaosStore();
+
+  // Clear all popups on mount
+  useEffect(() => {
+    clearPopups();
+  }, [clearPopups]);
 
   const [profiles, setProfiles] = useState(TOXIC_PROFILES);
   const [activeProfileIndex, setActiveProfileIndex] = useState(0);
@@ -197,7 +203,10 @@ export default function MarketplacePage() {
       <header className="px-4 py-2 border-b border-[#FF007F]/20 bg-black/60 backdrop-blur-md flex justify-between items-center z-40">
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => {
+              clearPopups();
+              window.location.href = '/';
+            }}
             className="text-lg font-bold text-zinc-500 hover:text-[#FF007F] font-mono tracking-widest uppercase transition-colors"
           >
             [ Back ]
@@ -322,8 +331,9 @@ export default function MarketplacePage() {
                     id={activeProfile.id}
                     tearType="horizontal"
                     onTearComplete={() => {
+                      clearPopups();
                       play('DIALUP');
-                      router.push('/compliance');
+                      window.location.href = '/compliance';
                     }}
                     underlayer={
                       <div className="p-6 text-center space-y-4 flex flex-col items-center justify-center h-full">
@@ -611,6 +621,7 @@ export default function MarketplacePage() {
         </motion.div>
       </div>
 
+      <EmotionalMeltdown />
     </div>
   );
 }

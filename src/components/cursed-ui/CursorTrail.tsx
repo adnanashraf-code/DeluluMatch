@@ -48,10 +48,10 @@ export default function CursorTrail() {
       targetX.current = e.clientX;
       targetY.current = e.clientY;
 
-      // Check if cursor is over a form area → switch to normal pointer
-      const hoveredElement = document.elementFromPoint(e.clientX, e.clientY);
-      if (hoveredElement) {
-        const inForm = hoveredElement.closest('form, select, input, textarea, [data-normal-cursor]');
+      // Check if cursor is over a form area using robust e.target
+      const target = e.target as HTMLElement;
+      if (target) {
+        const inForm = target.closest('form, select, input, textarea, button, a, [data-normal-cursor]');
         setIsOverForm(!!inForm);
         
         // If inside a form, skip ALL dodging mechanics
@@ -61,8 +61,8 @@ export default function CursorTrail() {
       }
 
       // ⚠️ Button Panic & Dodging Mechanics (only OUTSIDE forms)
-      if (cursorScale > 1.3 && hoveredElement) {
-        const button = hoveredElement.closest('button, a, input[type="submit"]') as HTMLElement;
+      if (cursorScale > 1.3 && target) {
+        const button = target.closest('button, a, input[type="submit"]') as HTMLElement;
         if (button) {
           const amplitude = (cursorScale - 1) * 12;
           const shiverX = (Math.random() - 0.5) * amplitude;
@@ -245,7 +245,7 @@ export default function CursorTrail() {
       </div>
 
       {/* 2. Trailing duplicate ghosts (Glitched duplicates at annoying/absurd scale) */}
-      {ghosts.map((ghost, idx) => (
+      {!isOverForm && ghosts.map((ghost, idx) => (
         <div
           key={idx}
           className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[999998] opacity-25 select-none mix-blend-color-dodge"

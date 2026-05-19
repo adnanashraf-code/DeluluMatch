@@ -8,11 +8,17 @@ import { useChaosStore } from '@/store/useChaosStore';
 import { useSound } from '@/components/audio/AudioProvider';
 import { AlertOctagon, ShieldAlert, HeartCrack, FileText, Lock, CheckCircle2, Siren } from 'lucide-react';
 import Image from 'next/image';
+import ComplianceSystemWipe from '@/components/cursed-ui/ComplianceSystemWipe';
 
 export default function CompliancePage() {
   const router = useRouter();
   const { play } = useSound();
-  const { addPopup, triggerShake, triggerGlitch, incrementDamage } = useChaosStore();
+  const { addPopup, triggerShake, triggerGlitch, incrementDamage, popups, clearPopups } = useChaosStore();
+
+  // Clear all popups on mount
+  useEffect(() => {
+    clearPopups();
+  }, [clearPopups]);
 
   // Form states
   const [manipulation, setManipulation] = useState('');
@@ -97,7 +103,8 @@ export default function CompliancePage() {
 
       // Fallback navigation if tearing doesn't trigger onTearComplete
       setTimeout(() => {
-        router.push('/thank-you');
+        clearPopups();
+        window.location.href = '/thank-you';
       }, 3500);
     }
   };
@@ -111,7 +118,10 @@ export default function CompliancePage() {
       <header className="p-5 border-b border-[#FF007F]/30 bg-black/75 backdrop-blur-md flex justify-between items-center z-40">
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => router.push('/marketplace')}
+            onClick={() => {
+              clearPopups();
+              window.location.href = '/marketplace';
+            }}
             className="text-lg font-bold text-zinc-400 hover:text-[#FF007F] font-mono tracking-widest uppercase transition-colors"
           >
             [ Back ]
@@ -177,7 +187,10 @@ export default function CompliancePage() {
               id="compliance-portal"
               tearType="diagonal"
             autoTearTrigger={autoTear}
-            onTearComplete={() => router.push('/thank-you')}
+            onTearComplete={() => {
+              clearPopups();
+              window.location.href = '/thank-you';
+            }}
             underlayer={
               <div className="p-6 md:p-12 text-center flex flex-col items-center justify-center h-full bg-[#050005] border border-red-500/40 rounded-lg shadow-[inset_0_0_50px_rgba(255,0,0,0.2)]">
                 <Siren size={60} className="text-red-500 animate-bounce" />
@@ -201,8 +214,9 @@ export default function CompliancePage() {
 
                 <button
                   onClick={() => {
+                    clearPopups();
                     play('DIALUP');
-                    router.push('/thank-you');
+                    window.location.href = '/thank-you';
                   }}
                   className="mt-8 px-8 py-3 bg-red-600 text-white font-bold uppercase tracking-widest rounded border border-black shadow-[4px_4px_0px_#000] hover:bg-white hover:text-black transition-all duration-300 text-xs animate-pulse"
                 >
@@ -536,6 +550,7 @@ export default function CompliancePage() {
         </motion.div>
       </div>
 
+      <ComplianceSystemWipe />
     </div>
   );
 }

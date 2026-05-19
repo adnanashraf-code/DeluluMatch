@@ -23,13 +23,13 @@ export default function TransitionOverlay() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const hasSeen = sessionStorage.getItem('has-seen-intro-overlay');
-      if (hasSeen === 'true') {
+      const hasSeen = sessionStorage.getItem('delulu-intro-shown');
+      if (hasSeen) {
         setShouldShow(false);
         return;
       }
       setShouldShow(true);
-      sessionStorage.setItem('has-seen-intro-overlay', 'true');
+      sessionStorage.setItem('delulu-intro-shown', 'true');
     }
   }, []);
 

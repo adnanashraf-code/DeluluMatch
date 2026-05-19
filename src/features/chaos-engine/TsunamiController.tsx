@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChaosStore } from '@/store/useChaosStore';
 import { useSound } from '@/components/audio/AudioProvider';
@@ -24,9 +25,16 @@ export default function TsunamiController() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
   const [debris, setDebris] = useState<{ id: number; char: string; x: number; y: number; scale: number; speed: number }[]>([]);
+  const [mounted, setMounted] = useState(false);
   
   // Keep track of original style transforms for restoration
   const originalStyles = useRef<{ element: HTMLElement; transform: string; transition: string; opacity: string }[]>([]);
+
+  // Setup mount state for safe SSR/hydration in Next.js
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // 1. Tsunami Event Trigger Hook: Automatically launches when active warning popups reach EXACTLY 5!
   useEffect(() => {
@@ -197,11 +205,13 @@ export default function TsunamiController() {
     }, 17000);
   };
 
-  return (
+  if (!mounted || tsunamiState === 'idle') return null;
+
+  return createPortal(
     <AnimatePresence>
       {/* ⚠️ STAGE 1: WARNING NOTIFICATIONS OVERLAY */}
       {tsunamiState === 'warning' && (
-        <div className="fixed inset-0 z-50 pointer-events-none flex flex-col justify-center items-center bg-red-950/20 backdrop-blur-[1px] uppercase font-mono select-none">
+        <div className="fixed inset-0 z-[999999999] pointer-events-none flex flex-col justify-center items-center bg-red-950/20 backdrop-blur-[1px] uppercase font-mono select-none">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -231,7 +241,7 @@ export default function TsunamiController() {
 
       {/* 🌊 STAGE 2: HIGH-FIDELITY DYNAMIC TEXT OVERLAY FOR THREE.JS ENGINE */}
       {(tsunamiState === 'arrival' || tsunamiState === 'collapse') && (
-        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center select-none font-mono">
+        <div className="fixed inset-0 z-[999999999] pointer-events-none flex items-center justify-center select-none font-mono">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -250,7 +260,7 @@ export default function TsunamiController() {
 
       {/* 🤿 STAGE 4: UNDERWATER GLOW STATE */}
       {tsunamiState === 'underwater' && (
-        <div className="fixed inset-0 z-50 bg-[#0c0316]/85 backdrop-blur-[6px] pointer-events-none flex items-center justify-center select-none font-mono">
+        <div className="fixed inset-0 z-[999999999] bg-[#0c0316]/85 backdrop-blur-[6px] pointer-events-none flex items-center justify-center select-none font-mono">
           <div className="absolute inset-0 bg-gradient-to-b from-[#FF007F]/20 via-transparent to-[#00FFFF]/20 pointer-events-none" />
           
           {/* Floating cyber debris particles */}
@@ -280,7 +290,7 @@ export default function TsunamiController() {
 
       {/* 🌌 STAGE 5: EMOTIONAL VOID OS TERMINAL REBOOT */}
       {tsunamiState === 'void' && (
-        <div className="fixed inset-0 z-50 bg-black pointer-events-none flex flex-col justify-center items-center select-none font-mono text-zinc-400 p-6">
+        <div className="fixed inset-0 z-[999999999] bg-black pointer-events-none flex flex-col justify-center items-center select-none font-mono text-zinc-400 p-6">
           <div className="w-full max-w-lg border border-zinc-800 p-6 bg-zinc-950/80 rounded relative shadow-[0_0_40px_rgba(255,0,127,0.1)]">
             <div className="absolute top-2 left-3 flex gap-1.5">
               <span className="w-2.5 h-2.5 bg-red-500 rounded-full" />
@@ -310,7 +320,7 @@ export default function TsunamiController() {
 
       {/* 🟢 STAGE 6: RECONSTRUCTION ACTIVE OVERLAY */}
       {tsunamiState === 'reconstruction' && (
-        <div className="fixed inset-0 z-50 bg-black/60 pointer-events-none flex items-center justify-center select-none font-mono text-white">
+        <div className="fixed inset-0 z-[999999999] bg-black/60 pointer-events-none flex items-center justify-center select-none font-mono text-white">
           <div className="text-center space-y-4">
             <div className="relative inline-block w-16 h-16 border-2 border-dashed border-[#FF007F] border-t-transparent rounded-full animate-spin" />
             <h3 className="text-lg font-bebas text-pink-300 font-bold tracking-widest uppercase">
@@ -322,6 +332,7 @@ export default function TsunamiController() {
           </div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

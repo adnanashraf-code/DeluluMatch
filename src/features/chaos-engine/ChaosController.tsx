@@ -11,6 +11,11 @@ export default function ChaosController() {
     // 1. Clear any active popups on initial mount to guarantee a clean screen!
     clearPopups();
 
+    // Disable all chaotic background loops on thank you page to prevent any unexpected popups or errors!
+    if (window.location.pathname.includes('/thank-you')) {
+      return;
+    }
+
     // Check if on mobile or small screen to reduce chaos spam
     const isMobile = window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches;
 

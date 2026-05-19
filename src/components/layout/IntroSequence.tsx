@@ -14,12 +14,23 @@ const BOOT_LOG = [
 ];
 
 export default function IntroSequence() {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const { play } = useSound();
 
   useEffect(() => {
-    // Sequence starts
+    // Only show intro once per session
+    if (typeof window !== 'undefined') {
+      const hasSeen = sessionStorage.getItem('delulu-intro-done');
+      if (hasSeen) return;
+      sessionStorage.setItem('delulu-intro-done', 'true');
+      setShow(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!show) return;
+    
     let currentLog = 0;
     const logInterval = setInterval(() => {
       if (currentLog < BOOT_LOG.length) {
@@ -33,7 +44,7 @@ export default function IntroSequence() {
     }, 450);
 
     return () => clearInterval(logInterval);
-  }, [play]);
+  }, [show, play]);
 
   return (
     <AnimatePresence>

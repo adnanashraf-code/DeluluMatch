@@ -2,7 +2,6 @@
 
 import { ReactNode, useEffect } from 'react';
 import gsap from 'gsap';
-import TransitionOverlay from '@/components/motion/TransitionOverlay';
 
 export default function Template({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -32,11 +31,8 @@ export default function Template({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <>
-      <TransitionOverlay />
-      <main className="w-full h-full min-h-screen">
-        {children}
-      </main>
-    </>
+    <main className="w-full h-full min-h-screen">
+      {children}
+    </main>
   );
 }

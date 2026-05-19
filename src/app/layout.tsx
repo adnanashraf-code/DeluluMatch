@@ -8,8 +8,6 @@ import CookieConsentMafia from "@/components/cursed-ui/CookieConsentMafia";
 import LoginBossFight from "@/components/cursed-ui/LoginBossFight";
 import PopupManager from "@/components/cursed-ui/PopupManager";
 import ChaosController from "@/features/chaos-engine/ChaosController";
-import TsunamiController from "@/features/chaos-engine/TsunamiController";
-import TsunamiWaterEngine from "@/components/cursed-ui/TsunamiWaterEngine";
 import ChaosOptimizationGuard from "@/components/cursed-ui/ChaosOptimizationGuard";
 import UniversalTearEngine from "@/components/tearing/UniversalTearEngine";
 import { AudioProvider } from "@/components/audio/AudioProvider";
@@ -42,8 +40,6 @@ export default function RootLayout({
           <LoginBossFight />
           <PopupManager />
           <ChaosController />
-          <TsunamiController />
-          <TsunamiWaterEngine />
           <ChaosOptimizationGuard />
           <UniversalTearEngine />
           <Soundscape />

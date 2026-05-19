@@ -8,25 +8,37 @@ import { useChaosStore } from '@/store/useChaosStore';
 import { useSound } from '@/components/audio/AudioProvider';
 import { Star, RotateCcw, AlertTriangle, ArrowRight, ShieldAlert } from 'lucide-react';
 import Image from 'next/image';
+import ThreeBreakupEngine from '@/components/cursed-ui/ThreeBreakupEngine';
+import ThreeShatterOverlay from '@/components/cursed-ui/ThreeShatterOverlay';
 
 export default function ThankYouPage() {
   const router = useRouter();
   const { play } = useSound();
-  const { clearPopups, addPopup, triggerShake, triggerGlitch, emotionalDamage } = useChaosStore();
+  const { clearPopups, addPopup, triggerShake, triggerGlitch, emotionalDamage, popups } = useChaosStore();
 
   const [rating, setRating] = useState<number | null>(null);
   const [showSurveyFeedback, setShowSurveyFeedback] = useState(false);
   const [printFinished, setPrintFinished] = useState(false);
 
+  // Cinematic breakdown timer states
+  const [isScreenBroken, setIsScreenBroken] = useState(false);
+  const [isScreenBlack, setIsScreenBlack] = useState(false);
+  const [breakdownCountdown, setBreakdownCountdown] = useState(10);
+
+  // Clear all popups on mount
+  useEffect(() => {
+    clearPopups();
+  }, [clearPopups]);
+
   // Restart loopback
   const handleRestartLoop = () => {
+    clearPopups();
     play('DIALUP');
     triggerShake(1000);
     triggerGlitch(1200);
-    clearPopups();
 
     setTimeout(() => {
-      router.push('/');
+      window.location.href = '/';
     }, 2000);
   };
 
@@ -50,36 +62,55 @@ export default function ThankYouPage() {
     return () => clearInterval(interval);
   }, [play]);
 
-  // Dynamic survey responses
+  // 1. Trigger glass/screen break & sound after 15 seconds
+  useEffect(() => {
+    const breakTimer = setTimeout(() => {
+      setIsScreenBroken(true);
+      play('RIP');
+      triggerShake(1500);
+      triggerGlitch(2000);
+    }, 15000);
+
+    return () => clearTimeout(breakTimer);
+  }, [play, triggerShake, triggerGlitch]);
+
+  // 2. Countdown timer interval once screen breaks (ends at 0 and triggers blackout)
+  useEffect(() => {
+    if (!isScreenBroken) return;
+    const interval = setInterval(() => {
+      setBreakdownCountdown((prev) => {
+        if (prev <= 1) {
+          setIsScreenBlack(true);
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isScreenBroken]);
+
+  // 3. Once screen goes pitch black, wait exactly 10 seconds and redirect back to Home Page
+  useEffect(() => {
+    if (!isScreenBlack) return;
+    const redirectTimer = setTimeout(() => {
+      // Clear session storage but preserve intro-shown status so it never repeats on loopback!
+      const hasSeenIntro = sessionStorage.getItem('delulu-intro-shown');
+      sessionStorage.clear();
+      if (hasSeenIntro) {
+        sessionStorage.setItem('delulu-intro-shown', hasSeenIntro);
+      }
+      window.location.href = '/';
+    }, 10000);
+
+    return () => clearTimeout(redirectTimer);
+  }, [isScreenBlack]);
+
+  // Dynamic survey responses - purely calm, no errors, glitches, or popups as requested!
   const handleRatingClick = (stars: number) => {
     play('CLICK');
     setRating(stars);
     setShowSurveyFeedback(true);
-
-    if (stars === 4 || stars === 5) {
-      triggerShake(300);
-      triggerGlitch(400);
-      setTimeout(() => {
-        addPopup({
-          title: '⚠️ COMPLIANCE VERIFICATION INCIDENT',
-          content: 'You rated 4+ stars. DeluluMatch guidelines dictate absolute dissatisfaction with relational suffering. Ratings have been adjusted to 1 star.',
-          x: 40,
-          y: 40,
-          type: 'toxic'
-        });
-        setRating(1);
-      }, 400);
-    } else {
-      setTimeout(() => {
-        addPopup({
-          title: '✨ SELF-RESPECT MILESTONE DETECTED',
-          content: 'Rating matches emotional damage limits. Standard therapy coupon code generated: DELULU100.',
-          x: 35,
-          y: 45,
-          type: 'therapy'
-        });
-      }, 400);
-    }
   };
 
   return (
@@ -175,20 +206,20 @@ export default function ThankYouPage() {
         {/* Right Side Column: Absurd Survey Ratings, Stickers & Breakup Image (lg:col-span-7) */}
         <section data-emotional-object="true" className="lg:col-span-7 space-y-10 flex flex-col justify-start w-full">
           
-          {/* New Section: Interactive 5-Piece Breakup Heart Shard Animation */}
+          {/* New Section: Interactive 3D Breakup Heart Shard Animation */}
           <div className="p-6 bg-black/60 border border-[#FF007F]/30 rounded-lg relative overflow-hidden shadow-[0_0_40px_rgba(255,0,127,0.1)]">
             <div className="absolute top-2 right-3 px-1.5 py-0.5 bg-[#FF007F] text-black font-bold text-[8px] rounded uppercase animate-pulse">
-              Interactive Breakup Vector
+              Interactive 3D Cyberspace
             </div>
             
             <h3 className="text-md font-bebas text-pink-300 font-bold tracking-widest uppercase mb-2">
-              💔 Emotional Breakdown Engine (Click to shatter your relationship)
+              💔 3D Emotional Breakdown Scene (Click Detonate to Shatter)
             </h3>
             <p className="text-[10px] text-zinc-400 uppercase tracking-tighter mb-4">
-              TAP OR CLICK ON THE LOVELY RE-IMAGE TO DETONATE HEART SHARDS INTO CYBERSPACE
+              DETONATE THE 3D NEON HEART AND WATCH THE SOULMATES SEPARATE IN REAL-TIME
             </p>
 
-            <BreakupHeartInteractive />
+            <ThreeBreakupEngine />
           </div>
 
           {/* Unified 10-Sticker Y2K Drift Matrix panel */}
@@ -311,166 +342,32 @@ export default function ThankYouPage() {
         </div>
       </footer>
 
-    </div>
-  );
-}
+      {/* Cinematic 3D Glass Shatter / Screen Break Overlay (Triggered at 15s) */}
+      <AnimatePresence>
+        {isScreenBroken && !isScreenBlack && (
+          <ThreeShatterOverlay countdown={breakdownCountdown} />
+        )}
+      </AnimatePresence>
 
-// 5-Piece Interactive Breakup Heart Shard Animation
-function BreakupHeartInteractive() {
-  const { play } = useSound();
-  const [shattered, setShattered] = useState(false);
-  const [blastActive, setBlastActive] = useState(false);
-
-  const handleShatter = () => {
-    play('RIP');
-    setShattered(prev => !prev);
-    
-    // Trigger temporary explosion blast physics shake
-    setBlastActive(true);
-    setTimeout(() => setBlastActive(false), 800);
-  };
-
-  // Coordinates and texts for the 5 split heart shards
-  const shards = [
-    { text: 'TRAUMA', initialX: -20, initialY: -20, shatterX: -90, shatterY: -100, rotate: -25, color: '#FF007F' },
-    { text: 'GHOSTED', initialX: 20, initialY: -20, shatterX: 90, shatterY: -100, rotate: 25, color: '#8A2BE2' },
-    { text: 'DELUSION', initialX: 0, initialY: 0, shatterX: 0, shatterY: -30, rotate: 10, color: '#FF1493' },
-    { text: 'AVOIDANT', initialX: -25, initialY: 25, shatterX: -100, shatterY: 90, rotate: -35, color: '#DA70D6' },
-    { text: 'COMPLIANCE', initialX: 25, initialY: 25, shatterX: 100, shatterY: 90, rotate: 35, color: '#FF0055' }
-  ];
-
-  return (
-    <div className="relative w-full h-[320px] bg-black/75 border border-zinc-900 rounded flex items-center justify-center overflow-hidden">
-      
-      {/* Glitched scanning grid backdrop */}
-      <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] pointer-events-none" />
-      
-      {/* Visual cyber glow background ring */}
-      <div className={`absolute w-52 h-52 rounded-full filter blur-3xl transition-all duration-700 opacity-20 pointer-events-none ${
-        shattered ? 'bg-red-600/30 scale-125' : 'bg-pink-600/25'
-      }`} />
-
-      {/* Main interactive clicking trigger button */}
-      <motion.div 
-        animate={blastActive ? {
-          scale: [1, 0.9, 1.15, 0.98, 1],
-          rotate: [0, -3, 5, -2, 0]
-        } : {}}
-        transition={{ duration: 0.5 }}
-        onClick={handleShatter}
-        className="relative z-30 cursor-pointer w-48 h-48 select-none"
-      >
-        <AnimatePresence mode="popLayout">
-          {!shattered ? (
-            // Full Beautiful Glow Heart before shatter
-            <motion.div 
-              key="full"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ 
-                scale: [1, 1.04, 1],
-                opacity: 1
-              }}
-              exit={{ scale: 0.4, opacity: 0 }}
-              transition={{ 
-                scale: { repeat: Infinity, duration: 1.8, ease: 'easeInOut' },
-                default: { duration: 0.3 }
-              }}
-              className="w-full h-full relative"
-            >
-              <Image 
-                src="/broken_heart_shattered.png" 
-                alt="Y2K Heart Vector" 
-                fill 
-                className="object-contain filter drop-shadow-[0_0_25px_rgba(255,0,127,0.6)]"
-              />
-              
-              {/* Instructions float tag */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/90 border border-[#FF007F]/40 px-2 py-0.5 rounded text-[8px] text-[#FF007F] font-bold uppercase tracking-wider animate-bounce">
-                SHATTER ME
-              </div>
-            </motion.div>
-          ) : (
-            // Shattered Shard Container using precise coordinates and framer spring physics
-            <motion.div 
-              key="shattered"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0"
-            >
-              {shards.map((shard, index) => (
-                <motion.div
-                  key={index}
-                  animate={{
-                    x: shard.shatterX,
-                    y: shard.shatterY,
-                    rotate: shard.rotate,
-                    scale: 0.95
-                  }}
-                  transition={{ 
-                    type: 'spring', 
-                    damping: 10, 
-                    stiffness: 90,
-                    delay: index * 0.03
-                  }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <div 
-                    className="px-2 py-1 bg-black/90 border-2 rounded text-[9px] font-bold tracking-widest shadow-[0_0_15px_rgba(255,0,127,0.35)] cursor-pointer"
-                    style={{ borderColor: shard.color, color: shard.color }}
-                  >
-                    💔 {shard.text}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Floating vector lines linking shards in Cyberspace */}
-      {shattered && (
-        <div className="absolute inset-0 pointer-events-none opacity-40">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <motion.line 
-              initial={{ x1: 768, y1: 160 }}
-              animate={{ x1: 768 + -90, y1: 160 + -100, x2: 768 + 0, y2: 160 + -30 }}
-              stroke="#FF007F" 
-              strokeWidth="1" 
-              strokeDasharray="4 4" 
-            />
-            <motion.line 
-              initial={{ x1: 768, y1: 160 }}
-              animate={{ x1: 768 + 90, y1: 160 + -100, x2: 768 + 0, y2: 160 + -30 }}
-              stroke="#8A2BE2" 
-              strokeWidth="1" 
-              strokeDasharray="4 4" 
-            />
-            <motion.line 
-              initial={{ x1: 768, y1: 160 }}
-              animate={{ x1: 768 + -100, y1: 160 + 90, x2: 768 + 100, y2: 160 + 90 }}
-              stroke="#DA70D6" 
-              strokeWidth="1.5" 
-              strokeDasharray="3 3" 
-            />
-          </svg>
-        </div>
-      )}
-
-      {/* Cyberpunk instruction prompt */}
-      <div 
-        onClick={() => {
-          play('CLICK');
-          setShattered(false);
-        }}
-        className="absolute bottom-3 text-[9px] uppercase tracking-wider text-zinc-500 hover:text-white cursor-pointer z-40 bg-black/85 px-3 py-1 border border-zinc-900 rounded"
-      >
-        {shattered ? '🔄 Reset Heart Loop' : 'Status: Heart Intact'}
-      </div>
+      {/* Cinematic Pitch Black Screen (Triggered at 25s) */}
+      <AnimatePresence>
+        {isScreenBlack && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-[9999999] bg-black pointer-events-auto select-none"
+          >
+            {/* Pure atmospheric silence and complete black screen */}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
 }
+
+
 
 // 10-STICKER STATIC DATASET
 const driftingStickers = [

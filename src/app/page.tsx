@@ -9,6 +9,8 @@ import MovingButton from '@/components/cursed-ui/MovingButton';
 import { useChaosStore } from '@/store/useChaosStore';
 import { useSound } from '@/components/audio/AudioProvider';
 import { Heart, Activity, AlertTriangle, ShieldAlert } from 'lucide-react';
+import TsunamiController from "@/features/chaos-engine/TsunamiController";
+import TsunamiWaterEngine from "@/components/cursed-ui/TsunamiWaterEngine";
 
 export default function Home() {
   const router = useRouter();
@@ -20,11 +22,18 @@ export default function Home() {
     triggerShake, 
     triggerGlitch, 
     incrementDamage,
-    setIsBossFighting
+    setIsBossFighting,
+    popups,
+    clearPopups
   } = useChaosStore();
 
   const [scanProgress, setScanProgress] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Clear all popups when page mounts
+  useEffect(() => {
+    clearPopups();
+  }, [clearPopups]);
 
   // Play ambient background sound on interaction
   useEffect(() => {
@@ -100,6 +109,10 @@ export default function Home() {
   // Transition to marketplace page (with beautiful CRT screen wipe)
   const handleEnterMarketplace = () => {
     if (isTransitioning) return;
+    
+    // Dismiss and clear landing page popups so they are left behind!
+    clearPopups();
+    
     setIsTransitioning(true);
     play('DIALUP');
     triggerShake(1000);
@@ -107,7 +120,7 @@ export default function Home() {
     incrementDamage(10);
 
     setTimeout(() => {
-      router.push('/marketplace');
+      window.location.href = '/marketplace';
     }, 2500);
   };
 
@@ -340,6 +353,8 @@ export default function Home() {
           <span>TRAUMA LEVEL: CRITICAL</span>
         </div>
       </footer>
+      <TsunamiController />
+      <TsunamiWaterEngine />
     </div>
   );
 }
